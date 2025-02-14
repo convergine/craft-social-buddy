@@ -1,0 +1,94 @@
+{% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
+
+{% if isPinterestEnabled or isFacebookEnabled or isTelegramEnabled %}
+    <div class="social-buddy">
+        <div class="social-buddy-field">
+            <div class="social-buddy-field-image">
+                <div class="sub-heading"><label>Image</label></div>
+                {{ imageFieldHtml | raw }}
+            </div>
+            <div class="social-buddy-field-text">
+                <div class="sub-heading"><label>Text</label></div>
+                {{ textFieldHtml | raw }}
+            </div>
+        </div>
+
+        {% if isPinterestEnabled %}
+            <div class="social-buddy-field">
+                <div class="social-buddy-field-board">
+                    <div class="sub-heading"><label>Pinterest Board</label></div>
+                    {{ boardFieldHtml | raw }}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="heading"><label>Preview</label></div>
+        <div class="social-buddy-field">
+            {% if isPinterestEnabled %}
+                <div class="social-buddy-preview-block">
+                    <div class="sub-heading"><label>Pinterest</label></div>
+                    <div class="social-buddy-preview pinterest">
+                        <div class="icon">
+                            {% include 'convergine-socialbuddy/icons/pinterest' %}
+                        </div>
+                        <div class="preview-title">
+                            {{ board | raw }}
+                        </div>
+                        <div class="preview-image">
+                            {% if imageUrl %}
+                                <img src="{{ imageUrl }}" alt="" />
+                            {% else %}
+                                <div class="no-image">No image</div>
+                            {% endif %}
+                        </div>
+                        <div class="preview-text">
+                            {{ text | raw }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if isFacebookEnabled %}
+                <div class="social-buddy-preview-block">
+                    <div class="sub-heading"><label>Facebook</label></div>
+                    <div class="social-buddy-preview facebook">
+                        <div class="icon">
+                            {% include 'convergine-socialbuddy/icons/facebook' %}
+                        </div>
+                        <div class="preview-image">
+                            {% if imageUrl %}
+                                <img src="{{ imageUrl }}" alt="" />
+                            {% else %}
+                                <div class="no-image">No image</div>
+                            {% endif %}
+                        </div>
+                        <div class="preview-text">
+                            {{ text | raw }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if isTelegramEnabled %}
+                <div class="social-buddy-preview-block">
+                    <div class="sub-heading"><label>Telegram</label></div>
+                    <div class="social-buddy-preview telegram">
+                        <div class="icon">
+                            {% include 'convergine-socialbuddy/icons/telegram' %}
+                        </div>
+                        <div class="preview-image">
+                            {% if imageUrl %}
+                                <img src="{{ imageUrl }}" alt="" />
+                            {% else %}
+                                <div class="no-image">No image</div>
+                            {% endif %}
+                        </div>
+                        <div class="preview-text">
+                            {{ text | raw }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    Please enable at least one social network in the <a href="/admin/convergine-socialbuddy/settings/pinterest">plugin settings</a>.
+{% endif %}

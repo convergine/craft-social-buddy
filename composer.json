@@ -1,0 +1,56 @@
+{
+    "name": "convergine/craft-social-buddy",
+    "description": "Social Buddy is a CraftCMS plugin that streamlines social media publishing. Easily share Craft entries to Facebook, Instagram, Pinterest, Telegram, Medium, LinkedIn, and X (Twitter) automatically or manually. Supports multi-platform publishing, customizable post content, cron job automation, and detailed logging. Available in FREE, LITE, and PRO versions, with secure authorization and multi-account support.",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craftcms",
+        "social-buddy",
+        "social-media",
+        "automation",
+        "Facebook",
+        "Instagram",
+        "Pinterest",
+        "Telegram",
+        "Medium",
+        "LinkedIn",
+        "X (Twitter)"
+    ],
+    "support": {
+        "issues": "https://github.com/convergine/craft-social-buddy/issues?state=open",
+        "source": "https://github.com/convergine/craft-social-buddy",
+        "docs": "https://github.com/convergine/craft-social-buddy/blob/master/README.md",
+        "support": {
+            "email": "info@convergine.com"
+        }
+    },
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Convergine Corp.",
+            "homepage": "https://www.convergine.com"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^4.0.0 || ^5.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "convergine\\socialbuddy\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Social Buddy",
+        "handle": "convergine-socialbuddy",
+        "hasCpSettings": true,
+        "hasCpSection": true,
+        "changelogUrl": "https://github.com/convergine/craft-social-buddy/blob/master/CHANGELOG.md",
+        "class": "convergine\\socialbuddy\\SocialBuddyPlugin"
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
+    }
+}

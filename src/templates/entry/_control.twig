@@ -1,0 +1,16 @@
+{% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
+
+<input type="hidden" name="sb_platform" id="sb_platform" />
+<div>
+    <label id="context-label" class="visually-hidden">Publish</label>
+    <button type="button" class="btn menubtn sitemenubtn" data-icon="share" aria-labelledby="context-label">Publish</button>
+    <div class="menu">
+        <ul>
+            <li>
+                {% for key, val in social %}
+                    <a href="javascript:void(0);" class="social-buddy-publish" data-brandicon="{{ key }}">Publish to {{ val }}</a>
+                {% endfor %}
+            </li>
+        </ul>
+    </div>
+</div>

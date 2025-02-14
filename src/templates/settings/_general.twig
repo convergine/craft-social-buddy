@@ -1,0 +1,25 @@
+{% extends 'convergine-socialbuddy/_layouts/_settings' %}
+{% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Settings' %}
+{% set selectedSubnavItem = 'settings' %}
+
+{% set fullPageForm = true %}
+
+{% block content %}
+    <h2>General</h2>
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+    <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
+    {% namespace 'settings' %}
+        {{ forms.selectizeField({
+            label: 'Mode'|t('convergine-socialbuddy'),
+            name: 'mode',
+            value: settings.mode,
+            options: [
+                { label: 'Manual', value: 'manual' },
+                { label: 'Automatic', value: 'automatic' },
+            ],
+        }) }}
+    {% endnamespace %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'convergine-socialbuddy/_layouts/_settings' %}
+{% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Settings' %}
+{% set selectedSubnavItem = 'fields' %}
+
+{% set fullPageForm = true %}
+
+{% block content %}
+    <h2>Default Fields</h2>
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+    <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
+    {% namespace 'settings' %}
+        <table class="data fullwidth">
+            <thead>
+            <tr>
+                <th>Section</th>
+                <th>Entry Type</th>
+                <th>Text Field</th>
+                <th>Image Field</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for entryType in entryTypes %}
+                <tr>
+                    <td>{{ entryType.section }}</td>
+                    <td>{{ entryType.name }}</td>
+                    <td>
+                        {% set options = [{ label: 'Select Field', value: '' }] %}
+                        {% for field in entryType.textFields %}
+                            {% set options = options|merge([{ label: field.name, value: field.handle }]) %}
+                        {% endfor %}
+                        {{ forms.selectizeField({
+                            label: null,
+                            name: 'textField['~entryType.handle~']',
+                            value: settings.getTextField(entryType.handle),
+                            options: options,
+                        }) }}
+                    </td>
+                    <td>
+                        {% set options = [{ label: 'Select Field', value: '' }] %}
+                        {% for field in entryType.imageFields %}
+                            {% set options = options|merge([{ label: field.name, value: field.handle }]) %}
+                        {% endfor %}
+                        {{ forms.selectizeField({
+                            label: null,
+                            name: 'imageField['~entryType.handle~']',
+                            value: settings.getImageField(entryType.handle),
+                            options: options,
+                        }) }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endnamespace %}
+{% endblock %}

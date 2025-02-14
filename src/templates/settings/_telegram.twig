@@ -1,0 +1,23 @@
+{% extends 'convergine-socialbuddy/_layouts/_settings' %}
+{% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Settings' %}
+{% set selectedSubnavItem = 'settings' %}
+
+{% set fullPageForm = true %}
+
+{% block content %}
+    <h2>Telegram</h2>
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+    <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
+    {% namespace 'settings' %}
+        {{ forms.autosuggestField({
+            label: 'API: Access Token'|t('convergine-socialbuddy'),
+            name: 'telegramApiToken',
+            value: settings.telegramApiToken,
+            instructions: 'Access token for Social Buddy'|t('convergine-socialbuddy'),
+            suggestEnvVars: true,
+        }) }}
+    {% endnamespace %}
+{% endblock %}
