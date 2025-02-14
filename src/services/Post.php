@@ -37,9 +37,14 @@ class Post {
         return Craft::$app->view->renderTemplate('convergine-socialbuddy/entry/_control.twig',[
             'social' => [
                 'all' => 'All',
-                'pinterest' => 'Pinterest',
                 'facebook' => 'Facebook',
-                'telegram' => 'Telegram'
+                'instagram' => 'Instagram',
+                'twitter' => 'X(Twitter)',
+                'pinterest' => 'Pinterest',
+                'linkedin' => 'LinkedIn',
+                'telegram' => 'Telegram',
+                'medium' => 'Medium',
+
             ]
         ]);
     }
@@ -54,6 +59,12 @@ class Post {
         }
 
         foreach($sections as $section) {
+
+            // Skip sections of type 'single'
+            if ($section->type === 'single') {
+                continue;
+            }
+
             foreach($section->getEntryTypes() as $entryType) {
                 $obj = (object)[
                     'id' => $entryType->id,
@@ -91,10 +102,10 @@ class Post {
     }
 
     public function getText(ElementInterface $entry) : string {
-//        /** @var SettingsModel $settings */
-//        $settings = SocialBuddyPlugin::getInstance()->getSettings();
-//        $field = $settings->getTextField($entry->type->handle);
-//        return strip_tags($entry->$field);
+        /** @var SettingsModel $settings */
+        $settings = SocialBuddyPlugin::getInstance()->getSettings();
+        $field = $settings->getTextField('posts', 'post'); // $entry->type->handle
+        return strip_tags($entry->$field);
 
         foreach($entry->getFieldLayout()->getCustomFields() as $field) {
             if($this->isSocialBuddyField($field)) {
@@ -111,11 +122,11 @@ class Post {
     public function getImage(Element $entry) : null|string {
 //        return "https://convergine.nyc3.digitaloceanspaces.com/clients/supremarine/assets/images/_920x720_crop_center-center_none/138699/554757586.webp";
 //        /** @var SettingsModel $settings */
-//        $settings = SocialBuddyPlugin::getInstance()->getSettings();
-//        $field = $settings->getImageField($entry->type->handle);
-//        /** @var AssetQuery $asset */
-//        $asset = $entry->$field;
-//        return $asset->one()->getUrl();
+        $settings = SocialBuddyPlugin::getInstance()->getSettings();
+        $field = $settings->getImageField('posts', 'post'); // $entry->type->handle
+        /** @var AssetQuery $asset */
+        $asset = $entry->$field;
+        return $asset->one()->getUrl();
 
         foreach($entry->getFieldLayout()->getCustomFields() as $field) {
             if($this->isSocialBuddyField($field)) {

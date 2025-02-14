@@ -7,25 +7,66 @@ use craft\helpers\App;
 
 class SettingsModel extends Model {
     public string $mode = 'manual';
+    public string $license = 'free';
+    public string $apiKey = '';        
 
-    public string $pinterestApiToken = '';
-    public string $pinterestAccessToken = '';
-    public int $pinterestExpiresIn = 0;
-    public string $pinterestExpiresDate = '';
+    public int $pinterestConnected = 1;
     public string $pinterestDefaultBoard = '';
+    public string $pinterestAccountImageURL = '';
+    public string $pinterestAccountName = '';
+    public string $pinterestClientId = '';
+    public string $pinterestClientSecret = '';
+    public string $pinterestAccessToken = '';
+    public string $pinterestPageId = '';
 
-    public string $facebookApiToken = '';
+
+    public int $facebookConnected = 1;
+    public string $facebookAccountImageURL = '';
+    public string $facebookAccountName = '';
+    public string $facebookClientId = '';
+    public string $facebookClientSecret = '';
     public string $facebookAccessToken = '';
-    public int $facebookExpiresIn = 0;
-    public string $facebookExpiresDate = '';
+    public string $facebookPageId = '';
 
-    public string $telegramApiToken = '';
-    public string $telegramAccessToken = '';
-    public int $telegramExpiresIn = 0;
-    public string $telegramExpiresDate = '';
+    public int $instagramConnected = 1;
+    public string $instagramAccountImageURL = '';
+    public string $instagramAccountName = '';
+    public string $instagramClientId = '';
+    public string $instagramClientSecret = '';
+    public string $instagramAccessToken = '';
+    public string $instagramPageId = '';
+
+
+    public int $twitterConnected = 1;
+    public string $twitterAccountName = '';
+    public string $twitterAccountImageURL = '';
+    public string $twitterClientId = '';
+    public string $twitterClientSecret = '';
+    public string $twitterAccessToken = '';
+    public string $twitterPageId = '';
+
+
+    public string $telegramChannelAccount = '';
+    public string $telegramBotToken = '';
+
+    public int $mediumConnected = 1;
+    public string $mediumIntegrationToken = '';
+
+    public int $linkedinConnected = 1;
+    public string $linkedinAccountName = '';
+    public string $linkedinAccountImageURL = '';
+    public string $linkedinClientId = '';
+    public string $linkedinClientSecret = '';
+    public string $linkedinAccessToken = '';
+    public string $linkedinPageId = '';
+
 
     public array $textField = [];
     public array $imageField = [];
+    public array $isEnabled = [];
+
+
+
 
     /**
      * Returns the API token for the given platform.
@@ -34,52 +75,77 @@ class SettingsModel extends Model {
      */
     public function getApiToken($platform): string {
         return match ($platform) {
-            SocialBuddyPlugin::PLATFORM_PINTEREST => App::parseEnv($this->pinterestApiToken),
-            SocialBuddyPlugin::PLATFORM_FACEBOOK => App::parseEnv($this->facebookApiToken),
-            SocialBuddyPlugin::PLATFORM_TELEGRAM => App::parseEnv($this->telegramApiToken),
+            // SocialBuddyPlugin::PLATFORM_PINTEREST => App::parseEnv($this->pinterestApiToken),
+            // SocialBuddyPlugin::PLATFORM_FACEBOOK => App::parseEnv($this->facebookApiToken),
+            // SocialBuddyPlugin::PLATFORM_TELEGRAM => App::parseEnv($this->telegramApiToken),
             default => '',
         };
     }
 
     public function isPinterestEnabled(): bool {
-        return !empty($this->pinterestApiToken);
+        return $this->pinterestConnected > 0;
     }
 
     public function isFacebookEnabled(): bool {
-        return !empty($this->facebookApiToken);
+        return $this->facebookConnected > 0;
+    }
+
+    public function isInstagramEnabled(): bool {
+        return $this->instagramConnected > 0;
+    }
+
+    public function isTwitterEnabled(): bool {
+        return $this->twitterConnected > 0;
     }
 
     public function isTelegramEnabled(): bool {
-        return !empty($this->telegramApiToken);
+        return !empty($this->telegramChannelAccount);
     }
 
-    public function getTextField($handle) : string {
-        return $this->textField[$handle] ?? '';
+    public function isMediumEnabled(): bool {
+        return $this->mediumConnected > 0;
     }
 
-    public function getImageField($handle) : string {
-        return $this->imageField[$handle] ?? '';
+    public function isLinkedinEnabled(): bool {
+        return $this->linkedinConnected > 0;
     }
+
+    public function getTextField($section, $handle) : string {
+        return $this->textField[$section . '-' . $handle] ?? '';
+    }
+
+    public function getImageField($section, $handle) : string {
+        return $this->imageField[$section . '-' . $handle] ?? '';
+    }
+
+    public function getEnabled($section, $handle) : bool {
+        return $this->isEnabled[$section . '-' . $handle] ?? false;
+    }
+
 
     public function rules() : array {
         return [
             [['mode'], 'string'],
 
-            [['pinterestApiToken'], 'string'],
-            [['pinterestAccessToken'], 'string'],
-            [['pinterestExpiresIn'], 'integer'],
-            [['pinterestExpiresDate'], 'string'],
             [['pinterestDefaultBoard'], 'string'],
+            [['pinterestAccountImageURL'], 'string'],
+            [['pinterestAccountName'], 'string'],
 
-            [['facebookApiToken'], 'string'],
-            [['facebookAccessToken'], 'string'],
-            [['facebookExpiresIn'], 'integer'],
-            [['facebookExpiresDate'], 'string'],
+            [['facebookAccountImageURL'], 'string'],
+            [['facebookAccountName'], 'string'],
 
-            [['telegramApiToken'], 'string'],
-            [['telegramAccessToken'], 'string'],
-            [['telegramExpiresIn'], 'integer'],
-            [['telegramExpiresDate'], 'string'],
+            [['instagramAccountImageURL'], 'string'],
+            [['instagramAccountName'], 'string'],
+
+            [['twitterAccountImageURL'], 'string'],
+            [['twitterAccountName'], 'string'],
+
+            [['linkedinAccountImageURL'], 'string'],
+            [['linkedinAccountName'], 'string'],            
+
+            [['telegramChannelAccount'], 'string'],
+            [['telegramBotToken'], 'string']
+
         ];
     }
 }

@@ -2,19 +2,40 @@
 {% set plugin = craft.app.getModule('convergine-socialbuddy') %}
 {% set crumbs = [
     { label: plugin.name, url: url('convergine-socialbuddy') },
+    { label: "Dashboard"|t('convergine-socialbuddy'), url: url('convergine-socialbuddy/dashboard') },    
     { label: "Settings"|t('convergine-socialbuddy'), url: url('convergine-socialbuddy/settings') },
 ] %}
 
 {% set selectedSubnavItem = 'settings' %}
 
+{% set isAdvanced = settings.license == 'advanced' %}
+
 {% set navItems = {
     'settings-heading': { heading: "Settings"|t('convergine-socialbuddy') },
     'general': { title: "General"|t('convergine-socialbuddy') },
-    'pinterest': { title: "Pinterest"|t('convergine-socialbuddy') },
+    'fields': { title: "Entries/Default Fields"|t('convergine-socialbuddy') },
     'facebook': { title: "Facebook"|t('convergine-socialbuddy') },
-    'telegram': { title: "Telegram"|t('convergine-socialbuddy') },
-    'fields': { title: "Default Fields"|t('convergine-socialbuddy') },
 } %}
+
+{# Adding remaining items if license is 'advanced' #}
+{% if settings.license != '' %}
+    {% set navItems = navItems|merge({
+        'instagram': { title: "Instagram"|t('convergine-socialbuddy') },
+        'twitter': { title: "X(Twitter)"|t('convergine-socialbuddy') }
+    }) %}
+{% endif %}
+
+
+{# Adding remaining items if license is 'advanced' #}
+{% if settings.license != '' %}
+    {% set navItems = navItems|merge({
+        'telegram': { title: "Telegram"|t('convergine-socialbuddy') },
+        'pinterest': { title: "Pinterest"|t('convergine-socialbuddy') },
+        'linkedin': { title: "LinkedIn"|t('convergine-socialbuddy') },
+        'medium': { title: "Medium"|t('convergine-socialbuddy') }
+    }) %}
+{% endif %}
+
 
 {% set activeTab = craft.app.request.getSegment(3) ?? 'general' %}
 

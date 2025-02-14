@@ -21,6 +21,6 @@ class PostController extends Controller {
             ]),10,0
         );
 
-        Craft::$app->session->setSuccess(Craft::t('convergine-socialbuddy','Submitting to '.$platform));
+        Craft::$app->session->setSuccess(Craft::t('convergine-socialbuddy','Successfully posted to '.$platform));
     }
 }

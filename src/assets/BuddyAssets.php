@@ -14,8 +14,8 @@ class BuddyAssets extends AssetBundle {
             $this->sourcePath = '@convergine/socialbuddy/assets/dist';
         }
 		$this->depends = [CpAsset::class];
-		$this->js = ['socialbuddy.js'];
-		$this->css = ['socialbuddy.css'];
+		$this->js = ['socialbuddy.js', 'tag-it.min.js'];
+		$this->css = ['socialbuddy.css', 'jquery.tagit.css', 'tagit.ui-zendesk.css'];
 		parent::init();
 	}
 }

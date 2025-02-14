@@ -1,1 +1,151 @@
-.social-buddy .heading{font-weight:700;margin-bottom:5px}.social-buddy .social-buddy-field{display:flex;margin-bottom:20px}.social-buddy .social-buddy-field .sub-heading{font-weight:600;margin-bottom:3px}.social-buddy .social-buddy-field .social-buddy-field-image{width:245px}.social-buddy .social-buddy-field .social-buddy-field-text{width:calc(100% - 245px)}.social-buddy .social-buddy-field .social-buddy-field-board{width:100%}.social-buddy .social-buddy-field .social-buddy-preview-block{padding:0 7px;width:33.3333%}.social-buddy .social-buddy-field .social-buddy-preview-block:first-child{padding-left:0;padding-right:13px}.social-buddy .social-buddy-field .social-buddy-preview-block:last-child{padding-left:13px;padding-right:0}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview{border-radius:4px;box-shadow:inset 0 2px 4px 0 rgba(0,0,0,.06);padding:25px;position:relative}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview.pinterest{background-color:rgba(189,8,28,.05)}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview.facebook{background-color:rgba(59,89,152,.05)}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview.facebook .preview-text{color:#1d2129;font-family:system-ui,-apple-system,BlinkMacSystemFont,\.SFNSText-Regular,sans-serif;font-size:12px;letter-spacing:0;line-height:16px}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview.telegram{background-color:rgba(0,136,204,.05)}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .icon{height:16px;position:absolute;right:5px;top:5px;width:16px}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .icon path{fill:#3f4d5a}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .preview-image img{border-radius:4px;max-height:200px;width:100%}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .preview-text{font-size:14px;font-weight:400;margin-top:10px}.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .preview-title{font-size:14px;font-weight:600;margin-bottom:10px}a[data-brandicon]{cursor:pointer!important}a[data-brandicon]:before{background-color:#3f4d5a;background-size:contain;content:"";display:inline-block;height:16px;margin-right:5px;mask-repeat:no-repeat;position:relative;top:3px;width:16px}a[data-brandicon]:hover:before{background-color:#fff}a[data-brandicon=all]:before{mask-image:url(images/all.svg)}a[data-brandicon=pinterest]:before{mask-image:url(images/pinterest.svg)}a[data-brandicon=facebook]:before{mask-image:url(images/facebook.svg)}a[data-brandicon=telegram]:before{mask-image:url(images/telegram.svg)}
+/*!*************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/css/style.scss ***!
+  \*************************************************************************************************************/
+
+.buddy-alert {
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  list-style-type: square;
+  display: none;
+}
+.buddy-alert.error{
+  background-color: #ffe3e3;
+  border-left: 5px solid #cf1124;
+}
+.buddy-alert.error li{
+  color: rgb(207, 17, 36);
+}
+.buddy-alert.success{
+  background-color: #e2fde3;
+  border-left: 5px solid #3b8134;
+}
+.buddy-alert.success span {
+  color: #3b8134;
+}
+.social-buddy .heading {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.social-buddy .social-buddy-field {
+  display: flex;
+  margin-bottom: 20px;
+}
+.social-buddy .social-buddy-field .sub-heading {
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.social-buddy .social-buddy-field .social-buddy-field-image {
+  width: 245px;
+}
+.social-buddy .social-buddy-field .social-buddy-field-text {
+  width: calc(100% - 245px);
+}
+.social-buddy .social-buddy-field .social-buddy-field-board {
+  width: 100%;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block {
+  width: 33.3333%;
+  padding: 0 7px;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block:first-child {
+  padding-left: 0;
+  padding-right: 13px;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block:last-child {
+  padding-right: 0;
+  padding-left: 13px;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview.pinterest {
+  background-color: rgba(189, 8, 28, 0.05);
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview {
+  background-color: rgba(59, 89, 152, 0.05);
+  position: relative;
+  padding: 25px;
+  box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px 0 inset;
+  border-radius: 4px;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .preview-text {
+  color: #1d2129;
+  font-size: 12px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, \.SFNSText-Regular, sans-serif;
+  letter-spacing: 0;
+  line-height: 16px;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview.telegram {
+  background-color: rgba(0, 136, 204, 0.05);
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 16px;
+  height: 16px;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .icon path {
+  fill: rgb(63, 77, 90);
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .preview-image img {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+.social-buddy .social-buddy-field .social-buddy-preview-block .social-buddy-preview .preview-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+a[data-brandicon] {
+  cursor: pointer !important;
+}
+a[data-brandicon]::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  margin-right: 5px;
+  position: relative;
+  top: 3px;
+  background-color: rgb(63, 77, 90);
+  mask-repeat: no-repeat;
+}
+
+a[data-brandicon]:hover::before {
+  background-color: rgb(255, 255, 255);
+}
+
+a[data-brandicon=all]::before {
+  mask-image: url(images/all.svg);
+}
+
+a[data-brandicon=pinterest]::before {
+  mask-image: url(images/pinterest.svg);
+}
+
+a[data-brandicon=facebook]::before {
+  mask-image: url(images/facebook.svg);
+}
+
+a[data-brandicon=telegram]::before {
+  mask-image: url(images/telegram.svg);
+}
+
+
+a[data-brandicon="instagram"]::before {
+  mask-image: url(images/instagram.svg);
+}
+
+a[data-brandicon="twitter"]::before {
+  mask-image: url(images/twitter.svg);
+}
+
+a[data-brandicon="linkedin"]::before {
+  mask-image: url(images/linkedin.svg);
+}
+
+a[data-brandicon="medium"]::before {
+  mask-image: url(images/medium.svg);
+}

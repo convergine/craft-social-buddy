@@ -12,8 +12,9 @@
     <input type="hidden" name="action" value="plugins/save-plugin-settings">
     <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
     {% namespace 'settings' %}
-        {{ forms.selectizeField({
+        {{ forms.selectField({
             label: 'Mode'|t('convergine-socialbuddy'),
+            instructions: 'Select manual mode if you want to publish each entry by clicking the button on entry page. Plugin will publish entries automatically when entry goes live in Automatic mode'|t('convergine-contentbuddy'),
             name: 'mode',
             value: settings.mode,
             options: [
@@ -21,5 +22,64 @@
                 { label: 'Automatic', value: 'automatic' },
             ],
         }) }}
+
+        <div class='buddy-alert success' style='display:block; margin-top: 16px;'><span>The cron job has been successfully configured. The plugin is now ready for automatic publishing.</span></div>
+
     {% endnamespace %}
+
+    <script>
+
+        function init() {
+
+            document.querySelector('.upgrade-btn').addEventListener('click', function(event) {
+                // Disable the button and show loader
+                var button = event.target;
+                button.disabled = true;
+
+                // Get the API key from the settings object in the template
+                var apiKey = "{{ settings.apiKey }}";
+                
+                // Open the Stripe URL in a new tab
+                var stripeUrl = "https://buy.stripe.com/test_14keW119k0Qv2Ri3cc?client_reference_id=" + apiKey;
+                window.open(stripeUrl, '_blank');            
+                
+                // Show loader
+                var loader = document.getElementById('settings-license-loader');
+                loader.style.display = 'inline';
+
+                function checkLicense() {
+                    fetch("https://api-dev.carebots.ai/api/smp/license?apikey=" + apiKey)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.license === 'advanced') {
+                                window.location.reload();
+                            } else {
+                                console.log('CALL checkLicense');
+                                setTimeout(checkLicense, 2000);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Optionally re-enable the button and hide loader on error
+                            button.disabled = false;
+                            loader.style.display = 'none';
+                        });
+                }
+
+                // Start the polling
+                checkLicense();
+            });
+        }
+
+        function regenerateApiKey() {
+            // Implement the logic to regenerate the API key here
+            alert('Regenerate API key logic not yet implemented.');
+        }
+
+        function cancelSubscription() {
+            // Implement the logic to cancel the subscription here
+            alert('Cancel subscription logic not yet implemented.');
+        }
+    </script>
+
 {% endblock %}

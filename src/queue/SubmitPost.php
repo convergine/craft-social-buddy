@@ -22,7 +22,11 @@ class SubmitPost extends BaseJob {
         $image = $post->getImage($entry);
         $board = $post->getBoard($entry);
 
-        Craft::info("SocialBuddy Text: " . $text, __METHOD__);
+        $entryUrl = $entry->getUrl();
+
+        $message = $text . "\n\nClick here to learn more: " . $entryUrl;
+
+        Craft::info("SocialBuddy Text: " . $message, __METHOD__);
         Craft::info("SocialBuddy Image: " . $image, __METHOD__);
         Craft::info("SocialBuddy Board: " . $board, __METHOD__);
 
@@ -36,7 +40,7 @@ class SubmitPost extends BaseJob {
                 Craft::info("SocialBuddy Pinterest Result: " . json_encode($result), __METHOD__);
                 break;
             case 'facebook':
-                $result = SocialBuddyPlugin::getInstance()->facebook->publishPost($text, $image);
+                $result = SocialBuddyPlugin::getInstance()->facebook->publishPost($message, $image);
                 Craft::info("SocialBuddy Facebook Result: " . json_encode($result), __METHOD__);
                 break;
             case 'telegram':

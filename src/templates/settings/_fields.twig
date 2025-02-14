@@ -9,6 +9,9 @@
 
 {% block content %}
     <h2>Default Fields</h2>
+    <div style="margin-bottom: 12px;">
+        <p>Configure which entry types and fields to use for publishing posts to social media. Select the entry section/type and designate fields for text and images</p>
+    </div>
     <input type="hidden" name="action" value="plugins/save-plugin-settings">
     <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
     {% namespace 'settings' %}
@@ -17,15 +20,26 @@
             <tr>
                 <th>Section</th>
                 <th>Entry Type</th>
+                <th>Enabled</th>
                 <th>Text Field</th>
                 <th>Image Field</th>
             </tr>
             </thead>
             <tbody>
             {% for entryType in entryTypes %}
+                {% set isEnabled = settings.getEnabled(entryType.section_handle, entryType.handle) ?? false %}
                 <tr>
                     <td>{{ entryType.section }}</td>
                     <td>{{ entryType.name }}</td>
+                    <td>
+                        {{ forms.lightswitchField({
+                            label: null,
+                            name: 'isEnabled['~entryType.section_handle~'-'~entryType.handle~']',
+                            instructions: '',
+                            on:  settings.getEnabled(entryType.section_handle, entryType.handle) ?? false,
+                            toggle: 'isEnabled['~entryType.section_handle~'-'~entryType.handle~']'
+                        }) }}                        
+                    </td>
                     <td>
                         {% set options = [{ label: 'Select Field', value: '' }] %}
                         {% for field in entryType.textFields %}
@@ -33,9 +47,9 @@
                         {% endfor %}
                         {{ forms.selectizeField({
                             label: null,
-                            name: 'textField['~entryType.handle~']',
-                            value: settings.getTextField(entryType.handle),
-                            options: options,
+                            name: 'textField['~entryType.section_handle~'-'~entryType.handle~']',
+                            value: settings.getTextField(entryType.section_handle, entryType.handle),
+                            options: options
                         }) }}
                     </td>
                     <td>
@@ -45,9 +59,9 @@
                         {% endfor %}
                         {{ forms.selectizeField({
                             label: null,
-                            name: 'imageField['~entryType.handle~']',
-                            value: settings.getImageField(entryType.handle),
-                            options: options,
+                            name: 'imageField['~entryType.section_handle~'-'~entryType.handle~']',
+                            value: settings.getImageField(entryType.section_handle, entryType.handle),
+                            options: options
                         }) }}
                     </td>
                 </tr>

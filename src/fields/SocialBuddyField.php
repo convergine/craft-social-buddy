@@ -9,7 +9,9 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Asset;
 use craft\fields\PlainText;
+use craft\fields\Dropdown;
 use craft\helpers\Json;
+use yii\helpers\Html;
 use yii\db\Schema;
 
 class SocialBuddyField extends Field {
@@ -39,12 +41,17 @@ class SocialBuddyField extends Field {
             $value = Json::decode($value);
         }
 
-        $elements = array();
-        if(isset($value['image']) && is_array($value['image'])) {
-            foreach($value['image'] as $assetId) {
-                $asset = Craft::$app->getAssets()->getAssetById($assetId);
-                if($asset) {
-                    $elements[] = $asset;
+        if ($element !== null && $element->featuredImage && !isset($value['image'])) {
+            $elements = $element->featuredImage->all();
+        } else {
+            $elements = [];
+        
+            if (isset($value['image']) && is_array($value['image'])) {
+                foreach ($value['image'] as $assetId) {
+                    $asset = Craft::$app->getAssets()->getAssetById($assetId);
+                    if ($asset) {
+                        $elements[] = $asset;
+                    }
                 }
             }
         }
@@ -61,7 +68,7 @@ class SocialBuddyField extends Field {
             'sources' => '*',
             'condition' => false,
             'sourceElementId' => null,
-            'limit' => 1,
+            'limit' => 10,
             'storageKey' => 'AssetsSelectModal',
             'fieldId' => 'image',
             'canUpload' => false,
@@ -71,9 +78,13 @@ class SocialBuddyField extends Field {
             'jsClass' => 'Craft.AssetSelectInput',
         ]);
 
+        // Get the entry's title if available
+        // TODO: get custom text field name from settings!!
+        $entryText = $element !== null ? $element->description : '';
+
         $textFieldHtml = Craft::$app->view->renderTemplate('_components/fieldtypes/PlainText/input', [
             'name' => $this->handle . '[text]',
-            'value' => $value['text'] ?? '',
+            'value' => $value['text'] ?? $entryText,
             'id' => $namespacedId . '-text',
             'placeholder' => '',
             'field' => new PlainText([
@@ -94,16 +105,81 @@ class SocialBuddyField extends Field {
             'orientation' => $this->getOrientation($element)
         ]) : null;
 
+        $inputId = $namespacedId . '-hashtag';
+
+        $hashtagFieldHtml = $settings->isFacebookEnabled() ? Craft::$app->view->renderTemplate('_components/fieldtypes/PlainText/input', [
+            'name' => $this->handle . '[hashtag]',
+            'value' => !empty($value['hashtag']) ? $value['hashtag'] : '',
+            'id' => $namespacedId . '-hashtag',
+            'placeholder' => '',
+            'field' => new PlainText([
+                'multiline' => true,
+                'initialRows' => 2
+            ]),
+            'orientation' => $this->getOrientation($element)
+        ]) : null;
+
+        // TODO: get custom text before url from settings!!
+        // $element !== null && $element instanceof Entry ? 
+        $postfix = 'Click here to learn more: <a href="'. $element->getUrl() . '" target="_blank">' . $element->getUrl() . '</a>';
+
+        $postfixFieldHtml = Craft::$app->view->renderTemplate('_components/fieldtypes/PlainText/input', [
+            'name' => $this->handle . '[postfix]',
+            'value' => !empty($value['postfix']) ? $value['postfix'] : $postfix,
+            'id' => $namespacedId . '-postfix',
+            'placeholder' => '',
+            'field' => new PlainText([
+                'multiline' => false
+            ]),
+            'orientation' => $this->getOrientation($element)
+        ]);
+
+
+        $mediumFieldHtml = Html::dropDownList(
+            $this->handle . '[mediumField]',
+            $value['mediumField'] ?? null,
+            [
+                'postExcept' => 'Except',
+                'postContent' => 'Post Content'
+            ],
+            [
+                'id' => $namespacedId . '-mediumField',
+            ]
+        );
+
+        /*
+        $mediumFieldHtml = Craft::$app->view->renderTemplate('_components/fieldtypes/Dropdown/input', [
+            'name' => $this->handle . '[mediumField]',
+            'value' => !empty($value['mediumField']) ? $value['mediumField'] : '',
+            'id' => $namespacedId . '-mediumField',
+            'field' => new Dropdown([
+                'options' => [
+                    ['label' => 'Except', 'value' => 'postExcept'],
+                    ['label' => 'Post Content', 'value' => 'postContent']
+                ],
+            ]),
+            'orientation' => $this->getOrientation($element)
+        ]);        
+        */
+
         $fieldHtml = Craft::$app->view->renderTemplate('convergine-socialbuddy/_components/fieldtypes/SocialBuddyField/input', [
             'imageFieldHtml' => $imageFieldHtml,
             'textFieldHtml' => $textFieldHtml,
             'boardFieldHtml' => $boardFieldHtml,
+            'hashtagFieldHtml' => $hashtagFieldHtml,
+            'postfixFieldHtml' => $postfixFieldHtml,
+            'mediumFieldHtml' => $mediumFieldHtml,
+            'title' => $element->title ?? 'TITLE',
             'imageUrl' => isset($value['image'][0]) ? Craft::$app->getAssets()->getAssetById($value['image'][0])->getUrl() : '',
-            'text' => isset($value['text']) ? nl2br($value['text']) : '',
+            'text' => $value['text'] ?? $entryText, // isset($value['text']) ? nl2br($value['text']) : '',
             'board' => !empty($value['board']) ? $value['board'] : $settings->pinterestDefaultBoard,
+            'hashtag' => !empty($value['hashtag']) ? $value['hashtag'] : '',
+            'postfix' => !empty($value['postfix']) ? $value['postfix'] : $postfix,
             'isPinterestEnabled' => $settings->isPinterestEnabled(),
             'isFacebookEnabled' => $settings->isFacebookEnabled(),
-            'isTelegramEnabled' => $settings->isTelegramEnabled()
+            'isTelegramEnabled' => $settings->isTelegramEnabled(),
+            'isMediumEnabled' => $settings->isMediumEnabled(),
+            'isInstagramEnabled' => $settings->isInstagramEnabled()
         ]);
 
         //$fieldHtml = Json::encode($value);

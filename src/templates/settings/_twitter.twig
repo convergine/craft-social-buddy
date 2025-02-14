@@ -1,0 +1,138 @@
+{% extends 'convergine-socialbuddy/_layouts/_settings' %}
+{% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Settings' %}
+{% set selectedSubnavItem = 'settings' %}
+
+{% set fullPageForm = true %}
+
+{% block content %}
+    <h2>X (Twitter)</h2>
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+    <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
+    {% namespace 'settings' %}
+
+        {% if settings.license == 'free' %}
+
+            <div class="warning" style="padding: 20px; background: #fff4e5; border: 1px solid #ffd9b3; border-radius: 4px; color: #663d00;">
+
+            This social platform is included in LITE/PRO versions of the plugin. Please upgrade at <a href="https://plugins.craftcms.com">plugins.craftcms.com</a>
+
+            </div>
+
+        {% else %}
+
+        <p>
+            Use our <a href="https://github.com/convergine/craft-social-buddy/blob/master/TWITTER.md?plain=1">guide</a> to set up your X(Twitter) connection.
+        </p>
+
+        {{ forms.autosuggestField({
+            label: 'X Consumer Keys/API Key'|t('convergine-socialbuddy'),
+            name: 'twitterClientId',
+            value: settings.twitterClientId,
+            instructions: 'Enter your X API Key from Consumer keys section here (Usually it is 25 chars length alphanumeric string)'|t('convergine-socialbuddy'),
+            suggestEnvVars: true,
+        }) }}
+
+        {{ forms.autosuggestField({
+            label: 'X Consumer Keys/Secret'|t('convergine-socialbuddy'),
+            name: 'twitterClientSecret',
+            value: settings.twitterClientSecret,
+            instructions: 'Enter your X API Secret from Consumer keys section  here (Usually it is 50 chars length alphanumeric string)'|t('convergine-socialbuddy'),
+            suggestEnvVars: true,
+        }) }}
+
+        {% if not settings.twitterConnected or settings.twitterConnected == 0 %}
+            <button type="button" class="btn primary connect-btn" style="margin-top: 20px;">
+                <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="connect-loader" style="display:none; margin-left: 5px;" alt="Loading">
+                {{ 'Connect' | t('convergine-socialbuddy') }}
+            </button>
+        {% else %}
+            <div style="display: flex; align-items: center; margin-top: 10px;">
+                <span>Connected to</span>
+                <img src="" alt="Profile Image" style="margin-left: 10px; height: 50px; vertical-align: middle;">
+                <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;"></span>
+                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectTwitter()">
+                    <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="connect-loader" style="display:none; margin-left: 5px;" alt="Loading">
+                    Disconnect
+                </button>
+            </div>
+        {% endif %}
+
+        {% endif %}
+
+    {% endnamespace %}
+
+    <script>
+
+        document.querySelector('.connect-btn').addEventListener('click', function(event) {
+            // Disable the button and show loader
+            var button = event.target;
+            button.disabled = true;
+
+            // Get the API key from the settings object in the template
+            var apiKey = "{{settings.apiKey}}";
+            
+            // Open the Twitter Auth URL in a new tab
+            var connectUrl = "https://api.x.com/oauth/authorize?oauth_token={{settings.twitterClientSecret}}&apikey=" + apiKey;
+            window.open(connectUrl, '_blank');            
+            
+            // Show loader
+            var loader = document.getElementById('settings-connect-loader');
+            loader.style.display = 'inline';
+
+            function checkXConnection() {
+                fetch("{{siteUrl}}admin/convergine-socialbuddy/platform?platform=twitter&apikey=" + apiKey)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.connected) {
+                            window.location.reload();
+                        } else {
+                            console.log('CALL check connect twitter');
+                            setTimeout(checkXConnection, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Optionally re-enable the button and hide loader on error
+                        button.disabled = false;
+                        loader.style.display = 'none';
+                    });
+            }
+
+            // Start the polling
+            checkXConnection();
+        });
+
+        function disconnectTwitter() {
+
+            if (!confirm('Are you sure you want to disconnect Twitter?')) {
+                return;
+            }
+
+            // Get the API key from the settings object in the template
+            var apiKey = "{{settings.apiKey}}";
+            
+            // Show loader
+            var loader = document.getElementById('settings-connect-loader');
+            loader.style.display = 'inline';
+
+            fetch("https://api-dev.carebots.ai/api/smp/disconnect?platform=twitter&apikey=" + apiKey, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.connected) {
+                        window.location.reload();
+                    } else {
+                        console.log('CALL check connect twitter');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Optionally re-enable the button and hide loader on error
+                    button.disabled = false;
+                    loader.style.display = 'none';
+                });
+        }
+    </script>
+{% endblock %}

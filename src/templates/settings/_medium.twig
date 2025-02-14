@@ -1,0 +1,39 @@
+{% extends 'convergine-socialbuddy/_layouts/_settings' %}
+{% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Settings' %}
+{% set selectedSubnavItem = 'settings' %}
+
+{% set fullPageForm = true %}
+
+{% block content %}
+    <h2>Medium</h2>
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+    <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
+    {% namespace 'settings' %}
+
+        {% if settings.license != 'pro' %}
+
+            <div class="warning" style="padding: 20px; background: #fff4e5; border: 1px solid #ffd9b3; border-radius: 4px; color: #663d00;">
+
+            This social platform is included in PRO versions of the plugin. Please upgrade at <a href="https://plugins.craftcms.com">plugins.craftcms.com</a>
+
+            </div>
+
+        {% else %}
+
+
+        {{ forms.autosuggestField({
+            label: 'Integration token'|t('convergine-socialbuddy'),
+            name: 'mediumIntegrationToken',
+            value: settings.mediumIntegrationToken,
+            instructions: 'You can find it on https://medium.com/me/settings/security under Integration tokens section'|t('convergine-socialbuddy'),
+            suggestEnvVars: true,
+        }) }}
+
+        {% endif %}
+
+
+    {% endnamespace %}
+{% endblock %}

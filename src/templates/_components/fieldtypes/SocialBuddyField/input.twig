@@ -1,6 +1,9 @@
 {% do view.registerAssetBundle("convergine\\socialbuddy\\assets\\BuddyAssets") %}
-
-{% if isPinterestEnabled or isFacebookEnabled or isTelegramEnabled %}
+<script>
+    // const inputId = {x2 textId }x2
+    // alert(inputId);
+</script>
+{% if isPinterestEnabled or isFacebookEnabled or isTelegramEnabled or isMediumEnabled %}
     <div class="social-buddy">
         <div class="social-buddy-field">
             <div class="social-buddy-field-image">
@@ -8,8 +11,14 @@
                 {{ imageFieldHtml | raw }}
             </div>
             <div class="social-buddy-field-text">
-                <div class="sub-heading"><label>Text</label></div>
+                <div class="sub-heading"><label>Additional post content</label></div>
+                <div id="description-instructions" class="instructions" style="margin-bottom: 3px;"><p>Use this field to adjust the post body text if necessary. Some social networks have character limits, so you can manually edit and shorten your content here to ensure it fits within the platform’s guidelines. If you prefer, the plugin will automatically trim the text for you while preserving the core message.</p>
+                </div>
                 {{ textFieldHtml | raw }}
+                <br/>
+                <div id="postfix-instructions" class="instructions" style="margin-bottom: 3px;"><p>This link to the entry page will be automatically added to the bottom of your social media post for easy access.</p>
+                </div>
+                {{ postfixFieldHtml | raw }}
             </div>
         </div>
 
@@ -18,6 +27,26 @@
                 <div class="social-buddy-field-board">
                     <div class="sub-heading"><label>Pinterest Board</label></div>
                     {{ boardFieldHtml | raw }}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if isInstagramEnabled %}
+            <div class="social-buddy-field">
+                <div class="social-buddy-field-board">
+                    <div class="sub-heading"><label>Instagram hashtags</label>
+                    </div>
+                    {{ hashtagFieldHtml | raw }}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if isMediumEnabled %}
+            <div class="social-buddy-field">
+                <div class="social-buddy-field-board">
+                    <div class="sub-heading"><label>Content field for Medium publication</label>
+                    </div>
+                    {{ mediumFieldHtml | raw }}
                 </div>
             </div>
         {% endif %}
@@ -61,18 +90,25 @@
                                 <div class="no-image">No image</div>
                             {% endif %}
                         </div>
+                        <div class="preview-text" style="font-weight: bold">
+                            {{ title | raw }}
+                        </div>
+                        <br/>
                         <div class="preview-text">
                             {{ text | raw }}
+                        </div>
+                        <div class="preview-text">
+                            {{ postfix | raw }}
                         </div>
                     </div>
                 </div>
             {% endif %}
-            {% if isTelegramEnabled %}
+            {% if isInstagramEnabled %}
                 <div class="social-buddy-preview-block">
-                    <div class="sub-heading"><label>Telegram</label></div>
+                    <div class="sub-heading"><label>Instagram</label></div>
                     <div class="social-buddy-preview telegram">
                         <div class="icon">
-                            {% include 'convergine-socialbuddy/icons/telegram' %}
+                            {% include 'convergine-socialbuddy/icons/instagram' %}
                         </div>
                         <div class="preview-image">
                             {% if imageUrl %}
@@ -81,8 +117,18 @@
                                 <div class="no-image">No image</div>
                             {% endif %}
                         </div>
+                        <div class="preview-text" style="font-weight: bold">
+                            {{ title | raw }}
+                        </div>
+                        <br/>
                         <div class="preview-text">
                             {{ text | raw }}
+                        </div>
+                        <div class="preview-text">
+                            {{ postfix | raw }}
+                        </div>
+                        <div class="preview-text" style="color: #4a7cf6; margin-top: 5px;">
+                            {{ hashtag | raw }}
                         </div>
                     </div>
                 </div>

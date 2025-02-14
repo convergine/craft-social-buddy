@@ -2,18 +2,20 @@
 namespace convergine\socialbuddy\services;
 
 use convergine\socialbuddy\SocialBuddyPlugin;
+use craft\helpers\UrlHelper;
 use Craft;
 
-class Pinterest extends Platform {
+
+class Instagram extends Platform {
     public function __construct() {
-        parent::__construct(SocialBuddyPlugin::PLATFORM_PINTEREST);
+        parent::__construct(SocialBuddyPlugin::PLATFORM_FACEBOOK);
     }
 
     public function getConnection() : array {
 
         $settings = SocialBuddyPlugin::getInstance()->getSettings();
         $apiKey = $settings->apiKey;
-        $url = self::API_URL . '/smp/pinterest/connection';
+        $url = self::API_URL . '/smp/platform?platform=instagram&apikey=' . $apiKey;
         $ch = curl_init($url);
         $headers = [
             'Content-Type: application/json',
@@ -27,29 +29,31 @@ class Pinterest extends Platform {
         $response = curl_exec($ch);
 
         // Log the raw response for debugging purposes
-        Craft::info('cURL Pinterest connection response: ' . $response, __METHOD__);        
+        Craft::info('cURL Instagram connection response: ' . $response, __METHOD__);        
        
         // declare responseData in function scope
         $responseData = [];
     
         if(curl_errno($ch)) {
-            Craft::error('cURL /smp/pinterest/connection error: ' . curl_error($ch), __METHOD__);
+            Craft::error('cURL /smp/platform?platform=instagram error: ' . curl_error($ch), __METHOD__);
         } else {
             $responseData = json_decode($response, true);
     
             if(json_last_error() === JSON_ERROR_NONE) {
-                if (isset($responseData['accountName'])) {
+                if (isset($responseData['page_id'])) {
                     // Ensure specific keys exist before using them
-                    $accountName = $responseData['accountName'];
-                    $settings->{'pinterestAccountName'} = $accountName;
-                    $imageURL = $responseData['accountImageURL'];
-                    $settings->{'pinterestAccountImageURL'} = $imageURL;
-                    $settings->{'pinterestConnected'} = 1;
-
-                    Craft::$app->getPlugins()->savePluginSettings(SocialBuddyPlugin::getInstance(), $settings->toArray());
+                    $accountName = $responseData['page_name'];
+                    $settings->{'instagramAccountName'} = $accountName;
+                    $imageURL = $responseData['page_picture'];
+                    $settings->{'instagramAccountImageURL'} = $imageURL;
+                    $settings->{'instagramConnected'} = 1;
                 } else {
-                    Craft::error("Missing expected keys in response data.", __METHOD__);
+                    $settings->{'instagramAccountName'} = '';
+                    $settings->{'instagramAccountImageURL'} = '';
+                    $settings->{'instagramConnected'} = 0;
+
                 }
+                Craft::$app->getPlugins()->savePluginSettings(SocialBuddyPlugin::getInstance(), $settings->toArray());
             } else {
                 Craft::error("Failed to decode JSON response: " . json_last_error_msg(), __METHOD__);
             }
@@ -57,21 +61,16 @@ class Pinterest extends Platform {
         curl_close($ch);
     
         return $responseData;
+    }    
 
-    }
 
-    public function publishPost($body, $title, $board_name, $image_url, $dominant_color = null) {
+    public function publishPost($body, $image_url) {
         $payload = [
             'body' => $body,
             'extra_params' => [
-                'title' => $title,
-                'board_name' => $board_name,
                 'image_url' => $image_url
             ]
         ];
-        if($dominant_color !== null) {
-            $payload['extra_params']['dominant_color'] = $dominant_color;
-        }
         return $this->post($payload,false);
         //todo maybe check response for success
     }

@@ -8,55 +8,65 @@
 {% set fullPageForm = true %}
 
 {% block content %}
-    <h2>Pinterest</h2>
+    <h2>LinkedIn</h2>
     <input type="hidden" name="action" value="plugins/save-plugin-settings">
     <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
     {% namespace 'settings' %}
 
         {% if settings.license != 'pro' %}
 
-        <div class="warning" style="padding: 20px; background: #fff4e5; border: 1px solid #ffd9b3; border-radius: 4px; color: #663d00;">
+            <div class="warning" style="padding: 20px; background: #fff4e5; border: 1px solid #ffd9b3; border-radius: 4px; color: #663d00;">
 
-        This social platform is included in PRO versions of the plugin. Please upgrade at <a href="https://plugins.craftcms.com">plugins.craftcms.com</a>
+            This social platform is included in PRO versions of the plugin. Please upgrade at <a href="https://plugins.craftcms.com">plugins.craftcms.com</a>
 
-        </div>
+            </div>
 
         {% else %}
 
 
         <p>
-            Use our <a href="https://github.com/convergine/craft-social-buddy/blob/master/PINTEREST.md?plain=1">guide</a> to set up your Pinterest connection.
+            Use our <a href="https://github.com/convergine/craft-social-buddy/blob/master/LINKEDIN.md?plain=1">guide</a> to set up your Pinterest connection.
         </p>
 
         {{ forms.autosuggestField({
-            label: 'Pinterest App ID'|t('convergine-socialbuddy'),
-            name: 'pinterestClientId',
-            value: settings.pinterestClientId,
-            instructions: 'Enter your Pinterest App ID here (Usually it is 7-digits string)'|t('convergine-socialbuddy'),
+            label: 'Linkedin Client ID'|t('convergine-socialbuddy'),
+            name: 'linkedinClientId',
+            value: settings.linkedinClientId,
+            instructions: 'Enter your Linkedin Client ID from Auth section here (Usually it is 14-chars length string)'|t('convergine-socialbuddy'),
             suggestEnvVars: true,
         }) }}
 
         {{ forms.autosuggestField({
-            label: 'Pinterest App Secret key'|t('convergine-socialbuddy'),
-            name: 'pinterestClientSecret',
-            value: settings.pinterestClientSecret,
-            instructions: 'Enter your Pinterest App Secret key here (Usually it is 40 chars length alphanumeric string)'|t('convergine-socialbuddy'),
+            label: 'Primary Client Secret'|t('convergine-socialbuddy'),
+            name: 'linkedinClientSecret',
+            value: settings.linkedinClientSecret,
+            instructions: 'Enter your Linkedin Primary Client Secret here (Usually it is 32-chars length string)'|t('convergine-socialbuddy'),
             suggestEnvVars: true,
         }) }}
 
+        <!-- div style="align-items: center; width:100%">
+            {{ forms.textField({
+                label: 'Authorized redirect URL for your app'|t('convergine-socialbuddy'),
+                name: 'linkedinRedirectUri',
+                value: siteUrl ~ 'admin/convergine-socialbuddy/linkedin_auth',
+                instructions: 'Please use this URI for Your Linkedin App setup'|t('convergine-socialbuddy'),
+                inputAttributes: { readonly: true, style: 'flex-grow: 1; width: 100%;', }
+            }) }}
+        </div -->
+
         <div class="field">
-        <div class="heading"><label>{{ 'Pinterest Redirect URI'|t('convergine-socialbuddy') }}</label></div>        
-        <div class="instructions"><p>{{ 'Please use this URI for Your Facebook App setup'|t('convergine-socialbuddy') }}</p></div>        
+        <div class="heading"><label>{{ 'Authorized redirect URL for your app'|t('convergine-socialbuddy') }}</label></div>        
+        <div class="instructions"><p>{{ 'Please use this URI for Your Linkedin App setup'|t('convergine-socialbuddy') }}</p></div>        
 
         <div style="display: flex; align-items: center; gap: 8px; width: 100%; margin: 1rem 0;">
             <strong style="flex-grow: 1; padding: 8px; border: 1px solid #e3e5e8; border-radius: 4px;">
-                {{ siteUrl }}admin/convergine-socialbuddy/pin_auth
+                {{ siteUrl }}admin/convergine-socialbuddy/linkedin_auth
             </strong>
             <svg onclick="copyToClipboard()" height="24px" id="Layer_1" style="enable-background:new 0 0 512 512; cursor: pointer; flex-shrink: 0; color: #3f51b5;" version="1.1" viewBox="0 0 512 512" width="24px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g><g><path d="M160,160h192c-1.7-20-9.7-35.2-27.9-40.1c-0.4-0.1-0.9-0.3-1.3-0.4c-12-3.4-20.8-7.5-20.8-20.7V78.2    c0-25.5-20.5-46.3-46-46.3c-25.5,0-46,20.7-46,46.3v20.6c0,13.1-8.8,17.2-20.8,20.6c-0.4,0.1-0.9,0.4-1.4,0.5    C169.6,124.8,161.9,140,160,160z M256,64.4c7.6,0,13.8,6.2,13.8,13.8c0,7.7-6.2,13.8-13.8,13.8c-7.6,0-13.8-6.2-13.8-13.8    C242.2,70.6,248.4,64.4,256,64.4z"/><path d="M404.6,63H331v14.5c0,10.6,8.7,18.5,19,18.5h37.2c6.7,0,12.1,5.7,12.4,12.5l0.1,327.2c-0.3,6.4-5.3,11.6-11.5,12.1    l-264.4,0.1c-6.2-0.5-11.1-5.7-11.5-12.1l-0.1-327.3c0.3-6.8,5.9-12.5,12.5-12.5H162c10.3,0,19-7.9,19-18.5V63h-73.6    C92.3,63,80,76.1,80,91.6V452c0,15.5,12.3,28,27.4,28H256h148.6c15.1,0,27.4-12.5,27.4-28V91.6C432,76.1,419.7,63,404.6,63z"/></g><rect height="16" width="112" x="144" y="192"/><rect height="16" width="160" x="144" y="288"/><rect height="16" width="129" x="144" y="384"/><rect height="16" width="176" x="144" y="336"/><rect height="16" width="208" x="144" y="240"/></g></svg>
-        </div>         
-        </div>         
+        </div>            
+        </div>            
 
-        {% if not settings.pinterestConnected or settings.pinterestConnected == 0 %}
+        {% if not settings.linkedinConnected or settings.linkedinConnected == 0 %}
             <button type="button" class="btn primary connect-btn" style="margin-top: 20px;">
                 <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="connect-loader" style="display:none; margin-left: 5px;" alt="Loading">
                 {{ 'Connect' | t('convergine-socialbuddy') }}
@@ -64,10 +74,14 @@
         {% else %}
             <div style="display: flex; align-items: center; margin-top: 10px;">
                 <span>Connected to</span>
-                <img src="" alt="Profile Image" style="margin-left: 10px; height: 50px; vertical-align: middle;">
+                <img src="">
                 <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;"></span>
-                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectPinterest()">Disconnect</button>
+                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectLinkedIn()">
+                    <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="connect-loader" style="display:none; margin-left: 5px;" alt="Loading">
+                    Disconnect
+                </button>
             </div>
+            
         {% endif %}
 
         {% endif %}
@@ -76,7 +90,7 @@
 
     <script>
 
-            function copyToClipboard() {
+        function copyToClipboard() {
             // Get the full URL from Twig template
             const textToCopy = '{{ siteUrl }}admin/convergine-socialbuddy/fb_auth';
 
@@ -107,7 +121,7 @@
             var apiKey = "{{settings.apiKey}}";
             
             // Open the LinkedIn Auth URL in a new tab
-            var connectUrl = "https://www.pinterest.com/oauth/?client_id={{settings.pinterestClientId}}&redirect_uri={{siteUrl}}admin/convergine-socialbuddy/pin_auth&response_type=code&scope=boards:read,boards:write,pins:read,pins:write,user_accounts:read&state={{ settings.apiKey }}";
+            var connectUrl = "https://linkedin.com/oauth/v2/authorization?client_id={{settings.linkedinClientId}}&response_type=code&redirect_uri={{siteUrl}}admin/convergine-socialbuddy/linkedin_auth&scope=openid,profile,w_member_social,email&state=" + apiKey;
             window.open(connectUrl, '_blank');            
             
             // Show loader
@@ -137,32 +151,34 @@
             checkInConnection();
         });
 
+        function disconnectLinkedIn() {
 
-        function disconnectPinterest() {
-            if (!confirm('Are you sure you want to disconnect Pinterest?')) {
+            if (!confirm('Are you sure you want to disconnect LinkedIn?')) {
                 return;
             }
 
-            fetch("{{siteUrl}}admin/convergine-socialbuddy/disconnect?platform=facebook&apikey=" + apiKey, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-Token': Craft.csrfTokenValue,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload(); // Reload the page to reflect changes
-                } else {
-                    alert('Failed to disconnect Pinterest.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while disconnecting Pinterest.');
-            });        
+            // Get the API key from the settings object in the template
+            var apiKey = "{{settings.apiKey}}";
+            
+            // Show loader
+            var loader = document.getElementById('settings-connect-loader');
+            loader.style.display = 'inline';
+
+            fetch("{{siteUrl}}admin/convergine-socialbuddy/disconnect?platform=linkedin&apikey=" + apiKey, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.connected) {
+                        window.location.reload();
+                    } else {
+                        console.log('CALL check connect linkedin');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Optionally re-enable the button and hide loader on error
+                    button.disabled = false;
+                    loader.style.display = 'none';
+                });
         }
     </script>
 {% endblock %}
