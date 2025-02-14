@@ -36,12 +36,12 @@ class FacebookController extends Controller
             /** @var \convergine\socialbuddy\models\Settings $settings */
             $settings = $plugin->getSettings();
 
-            if ($state == 'I') {
-                $clientId = $settings->$facebookClientId;
-                $clientSecret = $settings->$facebookClientSecret;
+            if ($state == 'F') {
+                $clientId = $settings->{'facebookClientId'};
+                $clientSecret = $settings->{'facebookClientSecret'};
             } else {
-                $clientId = $settings->$instagramClientId;
-                $clientSecret = $settings->$instagramClientSecret;
+                $clientId = $settings->{'instagramClientId'};
+                $clientSecret = $settings->{'instagramClientSecret'};
 
             }
             $siteUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
@@ -117,18 +117,18 @@ class FacebookController extends Controller
 
                             // Step 5: Store information in settings
                             if ($state == 'I') {
-                                $settings->instagramConnected = 1;
-                                $settings->instagramAccessToken = $pageAccessToken;
-                                $settings->instagramPageId = $pageId;
-                                $settings->instagramAccountName = $pageName;
-                                $settings->instagramAccountImageURL = $pagePictureUrl;
+                                $settings->{'instagramConnected'} = 1;
+                                $settings->{'instagramAccessToken'} = $pageAccessToken;
+                                $settings->{'instagramPageId'} = $pageId;
+                                $settings->{'instagramAccountName'} = $pageName;
+                                $settings->{'instagramAccountImageURL'} = $pagePictureUrl;
                             }
                             else {
-                                $settings->facebookConnected = 1;
-                                $settings->facebookAccessToken = $pageAccessToken;
-                                $settings->facebookPageId = $pageId;
-                                $settings->facebookAccountName = $pageName;
-                                $settings->facebookAccountImageURL = $pagePictureUrl;
+                                $settings->{'facebookConnected'} = 1;
+                                $settings->{'facebookAccessToken'} = $pageAccessToken;
+                                $settings->{'facebookPageId'} = $pageId;
+                                $settings->{'facebookAccountName'} = $pageName;
+                                $settings->{'facebookAccountImageURL'} = $pagePictureUrl;
                             }
 
                             // Save the updated settings

@@ -58,7 +58,7 @@
                 <span>Connected to</span>
                 <img src="{{ settings.facebookAccountImageURL }}" alt="Profile Image" style="margin-left: 10px; height: 50px; vertical-align: middle;">
                 <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;">{{ settings.facebookAccountName }}</span>
-                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectFacebook()">
+                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectFacebook($event)">
                     <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="connect-loader" style="display:none; margin-left: 5px;" alt="Loading">
                     Disconnect
                 </button>
@@ -129,20 +129,16 @@
             checkFbConnection();
         });
 
-        function disconnectFacebook() {
+        function disconnectFacebook($event) {
 
             if (!confirm('Are you sure you want to disconnect Facebook?')) {
                 return;
             }
 
-            // Get the API key from the settings object in the template
-            var apiKey = "{{settings.apiKey}}";
-            
-            // Show loader
-            var loader = document.getElementById('settings-connect-loader');
-            loader.style.display = 'inline';
+            var button = event.target;
+            button.disabled = true;
 
-            fetch("{{siteUrl}}admin/convergine-socialbuddy/disconnect?platform=facebook&apikey=" + apiKey, { method: "POST" })
+            fetch("{{siteUrl}}admin/convergine-socialbuddy/disconnect?platform=facebook", { method: "POST" })
                 .then(response => response.json())
                 .then(data => {
                     if (!data.connected) {
@@ -153,9 +149,8 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    // Optionally re-enable the button and hide loader on error
+                    // Optionally re-enable the button
                     button.disabled = false;
-                    loader.style.display = 'none';
                 });
         }
     </script>

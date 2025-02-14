@@ -459,6 +459,7 @@ class SocialBuddyPlugin extends Plugin {
 			function (RegisterUrlRulesEvent $event) {
                 $event->rules['convergine-socialbuddy/fb_auth'] = 'convergine-socialbuddy/facebook/fb-auth';
                 $event->rules['convergine-socialbuddy/fb_conn'] = 'convergine-socialbuddy/facebook/fb-conn';
+                $event->rules['convergine-socialbuddy/ig_conn'] = 'convergine-socialbuddy/facebook/ig-conn';
                 $event->rules['convergine-socialbuddy/disconnect'] = 'convergine-socialbuddy/settings/disconnect';
 				$event->rules['convergine-socialbuddy/dashboard'] = 'convergine-socialbuddy/dashboard';
                 $event->rules['convergine-socialbuddy/settings/general'] = 'convergine-socialbuddy/settings/general';

@@ -10,6 +10,40 @@ use Craft;
 class SettingsController extends Controller {
 
 
+    // Allow anonymous access to disconnect action
+    protected array|int|bool $allowAnonymous = ['disconnect'];
+
+
+    /**
+     * Returns the connected state of Facebook
+     *
+     * @return Response
+     */
+    public function actionDisconnect(): Response
+    {
+        // Get the plugin instance
+        $plugin = SocialBuddyPlugin::getInstance();
+        $settings = $plugin->getSettings();
+
+        $plugin = SocialBuddyPlugin::getInstance();
+        $componentName = $this->platform;
+    
+        // Check if the component exists and call disconnect
+        if (isset($plugin->getComponents()[$componentName])) {
+            $plugin->{$componentName}->disconnect($settings);
+        }        
+
+        // Save the updated settings
+        Craft::$app->getPlugins()->savePluginSettings(SocialBuddyPlugin::getInstance(), $settings->toArray());
+
+    
+        // Return the value as a JSON response
+        return $this->asJson([
+            'facebookConnected' => 0,
+        ]);
+    }
+
+
     /**
      * @return Response
      */

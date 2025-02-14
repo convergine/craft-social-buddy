@@ -37,12 +37,20 @@ class SocialBuddyField extends Field {
         /** @var SettingsModel $settings */
         $settings = SocialBuddyPlugin::getInstance()->getSettings();
 
+        // Retrieve the entry's section handle and entry handle
+        $sectionHandle = $element !== null ? $element->getSection()->handle : null;
+        $entryHandle = $element !== null ? $element->getType()->handle : null; // Get the entry's handle
+
+        // Get the field names from the settings arrays
+        $imageFieldHandle = $settings->getImageField($sectionHandle, $entryHandle);
+        $textFieldHandle = $settings->getTextField($sectionHandle, $entryHandle);
+
         if(is_string($value)) {
             $value = Json::decode($value);
         }
 
-        if ($element !== null && $element->featuredImage && !isset($value['image'])) {
-            $elements = $element->featuredImage->all();
+        if ($element !== null && $element->{$imageFieldHandle} && !is_string($element->{$imageFieldHandle}) && !isset($value['image'])) {
+            $elements = $element->{$imageFieldHandle}->all();
         } else {
             $elements = [];
         
@@ -55,6 +63,8 @@ class SocialBuddyField extends Field {
                 }
             }
         }
+
+        $imageUrl =  !empty($elements) ? $elements[0]->getUrl() : null;
 
         $imageFieldHtml = Craft::$app->view->renderTemplate('_components/fieldtypes/Assets/input', [
             'name' => $this->handle . '[image]',
@@ -78,9 +88,8 @@ class SocialBuddyField extends Field {
             'jsClass' => 'Craft.AssetSelectInput',
         ]);
 
-        // Get the entry's title if available
-        // TODO: get custom text field name from settings!!
-        $entryText = $element !== null ? $element->description : '';
+        // Get the entry's text field dynamically
+        $entryText = $element !== null && $element->{$textFieldHandle} ? $element->{$textFieldHandle} : '';
 
         $textFieldHtml = Craft::$app->view->renderTemplate('_components/fieldtypes/PlainText/input', [
             'name' => $this->handle . '[text]',
@@ -147,21 +156,6 @@ class SocialBuddyField extends Field {
             ]
         );
 
-        /*
-        $mediumFieldHtml = Craft::$app->view->renderTemplate('_components/fieldtypes/Dropdown/input', [
-            'name' => $this->handle . '[mediumField]',
-            'value' => !empty($value['mediumField']) ? $value['mediumField'] : '',
-            'id' => $namespacedId . '-mediumField',
-            'field' => new Dropdown([
-                'options' => [
-                    ['label' => 'Except', 'value' => 'postExcept'],
-                    ['label' => 'Post Content', 'value' => 'postContent']
-                ],
-            ]),
-            'orientation' => $this->getOrientation($element)
-        ]);        
-        */
-
         $fieldHtml = Craft::$app->view->renderTemplate('convergine-socialbuddy/_components/fieldtypes/SocialBuddyField/input', [
             'imageFieldHtml' => $imageFieldHtml,
             'textFieldHtml' => $textFieldHtml,
@@ -170,7 +164,7 @@ class SocialBuddyField extends Field {
             'postfixFieldHtml' => $postfixFieldHtml,
             'mediumFieldHtml' => $mediumFieldHtml,
             'title' => $element->title ?? 'TITLE',
-            'imageUrl' => isset($value['image'][0]) ? Craft::$app->getAssets()->getAssetById($value['image'][0])->getUrl() : '',
+            'imageUrl' => isset($value['image'][0]) ? Craft::$app->getAssets()->getAssetById($value['image'][0])->getUrl() : $imageUrl,
             'text' => $value['text'] ?? $entryText, // isset($value['text']) ? nl2br($value['text']) : '',
             'board' => !empty($value['board']) ? $value['board'] : $settings->pinterestDefaultBoard,
             'hashtag' => !empty($value['hashtag']) ? $value['hashtag'] : '',
