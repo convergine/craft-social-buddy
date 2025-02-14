@@ -13,7 +13,7 @@ use Craft;
 class FacebookController extends Controller
 {
     // Allow anonymous access to the 'fb-auth' action
-    protected array|int|bool $allowAnonymous = ['fb-auth','fb-conn'];
+    protected array|int|bool $allowAnonymous = ['fb-auth','fb-conn','ig-conn'];
 
     public function beforeAction($action): bool
     {
@@ -36,9 +36,16 @@ class FacebookController extends Controller
             /** @var \convergine\socialbuddy\models\Settings $settings */
             $settings = $plugin->getSettings();
 
-            $clientId = '3507837842783632';
-            $clientSecret = '35e27c98eaa932a264bda3e03fb816fa';
-            $redirectUri = 'https://dev-supremarine.newsite.space/admin/convergine-socialbuddy/fb_auth';
+            if ($state == 'I') {
+                $clientId = $settings->$facebookClientId;
+                $clientSecret = $settings->$facebookClientSecret;
+            } else {
+                $clientId = $settings->$instagramClientId;
+                $clientSecret = $settings->$instagramClientSecret;
+
+            }
+            $siteUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
+            $redirectUri = $siteUrl . 'admin/convergine-socialbuddy/fb_auth';
 
             $tokenEndpoint = 'https://graph.facebook.com/v17.0/oauth/access_token';
             $graphApiUrl = 'https://graph.facebook.com/v17.0/';
@@ -109,24 +116,42 @@ class FacebookController extends Controller
                             $pagePictureUrl = $pageInfo['picture']['data']['url'] ?? '';
 
                             // Step 5: Store information in settings
-                            $settings->facebookConnected = 1;
-                            $settings->facebookAccessToken = $pageAccessToken;
-                            $settings->facebookPageId = $pageId;
-                            $settings->facebookAccountName = $pageName;
-                            $settings->facebookAccountImageURL = $pagePictureUrl;
+                            if ($state == 'I') {
+                                $settings->instagramConnected = 1;
+                                $settings->instagramAccessToken = $pageAccessToken;
+                                $settings->instagramPageId = $pageId;
+                                $settings->instagramAccountName = $pageName;
+                                $settings->instagramAccountImageURL = $pagePictureUrl;
+                            }
+                            else {
+                                $settings->facebookConnected = 1;
+                                $settings->facebookAccessToken = $pageAccessToken;
+                                $settings->facebookPageId = $pageId;
+                                $settings->facebookAccountName = $pageName;
+                                $settings->facebookAccountImageURL = $pagePictureUrl;
+                            }
 
                             // Save the updated settings
                             Craft::$app->plugins->savePluginSettings($plugin, $settings->toArray());
 
                             // You may wish to redirect or render a success template
-                            return $this->renderTemplate('convergine-socialbuddy/_layouts/_fb_success', [
-                                'accountName' => $pageName,
-                                'socialMediaIcon' => 'fb.svg',
-                                'socialMediaName' => 'Facebook page', // Or append 'Facebook Page' if desired
-                                'linkBack' => 'https://dev-supremarine.newsite.space/admin/convergine-socialbuddy/settings/facebook',                            
-                            ]);
+                            if ($state == 'I') {
+                                return $this->renderTemplate('convergine-socialbuddy/_layouts/_fb_success', [
+                                    'accountName' => $pageName,
+                                    'socialMediaIcon' => 'instagram.svg',
+                                    'socialMediaName' => 'Instagram account', // Or append 'Facebook Page' if desired
+                                    'linkBack' => $siteUrl . 'admin/convergine-socialbuddy/settings/instagram',                            
+                                ]);
+                            } else {
+                                return $this->renderTemplate('convergine-socialbuddy/_layouts/_fb_success', [
+                                    'accountName' => $pageName,
+                                    'socialMediaIcon' => 'fb.svg',
+                                    'socialMediaName' => 'Facebook page', // Or append 'Facebook Page' if desired
+                                    'linkBack' => $siteUrl . 'admin/convergine-socialbuddy/settings/facebook',                            
+                                ]);
+                            }
                         } else {
-                            throw new \Exception('No pages found in your Facebook account.');
+                            throw new \Exception('No pages found in your Meta account.');
                         }
                     } else {
                         throw new \Exception('Could not retrieve long-lived user access token.');
@@ -187,6 +212,28 @@ class FacebookController extends Controller
             'facebookConnected' => $facebookConnected,
         ]);
     }
+
+    /**
+     * Returns the connected state of Instagram
+     *
+     * @return Response
+     */
+    public function actionIgConn(): Response
+    {
+        // Get the plugin instance
+        $plugin = SocialBuddyPlugin::getInstance();
+        $settings = $plugin->getSettings();
+        /** @var \convergine\socialbuddy\models\Settings $settings */
+
+        // Get the 'instagramConnected' setting
+        $instagramConnected = $settings->instagramConnected;
+
+        // Return the value as a JSON response
+        return $this->asJson([
+            'instagramConnected' => $instagramConnected,
+        ]);
+    }
+
 
 
 }
