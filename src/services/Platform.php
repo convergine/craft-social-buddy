@@ -86,50 +86,6 @@ class Platform {
 
     // write function to call API to get license level
     public function getLicense() : string {
-        /*
-        $settings = SocialBuddyPlugin::getInstance()->getSettings();
-        $apiKey = $settings->apiKey;
-        $url = self::API_URL . '/smp/license?apikey='.$apiKey;
-        Craft::info('cURL getLicense API call URL: ' . $url, __METHOD__);
-        $ch = curl_init($url);
-        $headers = [
-            'Content-Type: application/json'
-        ];        
-    
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // change API call from POST to GET
-        curl_setopt($ch, CURLOPT_POST, false);
-        $response = curl_exec($ch);
-
-        // Log the raw response for debugging purposes
-        Craft::info('cURL getLicense response: ' . $response, __METHOD__);        
-       
-        // declare responseData in function scope
-        $responseData = [];
-    
-        if(curl_errno($ch)) {
-            Craft::error('cURL error: ' . curl_error($ch), __METHOD__);
-        } else {
-            $responseData = json_decode($response, true);
-    
-            if(json_last_error() === JSON_ERROR_NONE) {
-                if (isset($responseData['license'])) {
-                    // Ensure specific keys exist before using them
-                    $license = $responseData['license'];
-                    $settings->{'license'} = $license;
-                    Craft::$app->getPlugins()->savePluginSettings(SocialBuddyPlugin::getInstance(), $settings->toArray());
-                } else {
-                    Craft::error("Missing expected keys in response data.", __METHOD__);
-                }
-            } else {
-                Craft::error("Failed to decode JSON response: " . json_last_error_msg(), __METHOD__);
-            }
-        }
-        curl_close($ch);
-    
-        return $responseData['license'];
-        */
 
         $plugin = SocialBuddyPlugin::getInstance();
 
@@ -137,13 +93,13 @@ class Platform {
         {
             return SocialBuddyPlugin::EDITION_PRO;
         }
-        else if($plugin->is(SocialBuddyPlugin::EDITION_LITE))
+        else if($plugin->is(SocialBuddyPlugin::EDITION_STANDARD))
         {
-            return SocialBuddyPlugin::EDITION_LITE;
+            return SocialBuddyPlugin::EDITION_STANDARD;
         }
         else
         {
-            return SocialBuddyPlugin::EDITION_FREE;
+            return SocialBuddyPlugin::EDITION_LITE;
         }
     }
 
