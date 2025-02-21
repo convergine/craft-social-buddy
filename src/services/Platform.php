@@ -93,9 +93,9 @@ class Platform {
         {
             return SocialBuddyPlugin::EDITION_PRO;
         }
-        else if($plugin->is(SocialBuddyPlugin::EDITION_STANDARD))
+        else if($plugin->is(SocialBuddyPlugin::EDITION_PLUS))
         {
-            return SocialBuddyPlugin::EDITION_STANDARD;
+            return SocialBuddyPlugin::EDITION_PLUS;
         }
         else
         {
