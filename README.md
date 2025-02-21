@@ -7,8 +7,8 @@ Social Buddy is a CraftCMS plugin designed to streamline your social media publi
 The plugin has three licensing levels depending on social media platforms supported:
 
 - **LITE**: Facebook 
-- **STANDARD**: LITE + Instagram, X(Twitter) 
-- **PRO**: STANDARD + Pinterest, LinkedIn, Medium, Telegram
+- **PLUS**: LITE + Instagram, X(Twitter) 
+- **PRO**: PLUS + Pinterest, LinkedIn, Medium, Telegram
 
 The plugin offers flexibility with two operating modes:
 

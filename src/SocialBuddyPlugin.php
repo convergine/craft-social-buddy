@@ -411,14 +411,14 @@ class SocialBuddyPlugin extends Plugin {
 	public const PLATFORM_LINKEDIN = 'linkedin';
 
 	public const EDITION_LITE = 'lite';
-	public const EDITION_STANDARD = 'standard';
+	public const EDITION_PLUS = 'plus';
     public const EDITION_PRO = 'pro';
 
     public static function editions(): array
     {
         return [
             self::EDITION_LITE,
-			self::EDITION_STANDARD,
+			self::EDITION_PLUS,
             self::EDITION_PRO,
         ];
     }
