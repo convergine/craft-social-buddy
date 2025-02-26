@@ -2,7 +2,7 @@
     "name": "convergine/craft-social-buddy",
     "description": "Social Buddy is a CraftCMS plugin for seamless social media publishing. Share entries to Facebook, Instagram, Pinterest, Telegram, Medium, LinkedIn, and X (Twitter), with options for both automatic and manual posting. Supports multi-platform publishing, customizable content, and cron job automation.",
     "type": "craft-plugin",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "keywords": [
         "craftcms",
         "social-buddy",
