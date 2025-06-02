@@ -75,4 +75,39 @@ class Pinterest extends Platform {
         return $this->post($payload,false);
         //todo maybe check response for success
     }
+
+    /**
+     * Fetches Pinterest boards using the access token from settings.
+     * @return array
+     */
+    public function getBoards(): array
+    {
+        $settings = SocialBuddyPlugin::getInstance()->getSettings();
+        $accessToken = $settings->pinterestAccessToken;
+        if (empty($accessToken)) {
+            Craft::error('Pinterest access token is missing.', __METHOD__);
+            return [];
+        }
+        $url = 'https://api.pinterest.com/v5/boards';
+        $ch = curl_init($url);
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $accessToken
+        ];
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            Craft::error('cURL Pinterest boards error: ' . curl_error($ch), __METHOD__);
+            curl_close($ch);
+            return [];
+        }
+        curl_close($ch);
+        $data = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Craft::error('Failed to decode Pinterest boards JSON: ' . json_last_error_msg(), __METHOD__);
+            return [];
+        }
+        return $data['items'] ?? [];
+    }
 }

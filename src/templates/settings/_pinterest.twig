@@ -46,7 +46,7 @@
 
         <div class="field">
         <div class="heading"><label>{{ 'Pinterest Redirect URI'|t('convergine-socialbuddy') }}</label></div>        
-        <div class="instructions"><p>{{ 'Please use this URI for Your Facebook App setup'|t('convergine-socialbuddy') }}</p></div>        
+        <div class="instructions"><p>{{ 'Please use this URI for Your Pinterest App setup'|t('convergine-socialbuddy') }}</p></div>        
 
         <div style="display: flex; align-items: center; gap: 8px; width: 100%; margin: 1rem 0;">
             <strong style="flex-grow: 1; padding: 8px; border: 1px solid #e3e5e8; border-radius: 4px;">
@@ -64,9 +64,9 @@
         {% else %}
             <div style="display: flex; align-items: center; margin-top: 10px;">
                 <span>Connected to</span>
-                <img src="" alt="Profile Image" style="margin-left: 10px; height: 50px; vertical-align: middle;">
-                <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;"></span>
-                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectPinterest()">Disconnect</button>
+                <img src="{{ settings.pinterestAccountImageURL }}" alt="Profile Image" style="margin-left: 10px; height: 50px; width: 50px; object-fit: cover; vertical-align: middle; border-radius: 50%">
+                <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;">{{ settings.pinterestAccountName }}</span>
+                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectPinterest(event)">Disconnect</button>
             </div>
         {% endif %}
 
@@ -78,7 +78,7 @@
 
             function copyToClipboard() {
             // Get the full URL from Twig template
-            const textToCopy = '{{ siteUrl }}admin/convergine-socialbuddy/fb_auth';
+            const textToCopy = '{{ siteUrl }}admin/convergine-socialbuddy/pin_auth';
 
             // Modern clipboard API
             navigator.clipboard.writeText(textToCopy)
@@ -104,65 +104,68 @@
             button.disabled = true;
 
             // Get the API key from the settings object in the template
-            var apiKey = "{{settings.apiKey}}";
+            var clientId = "{{settings.pinterestClientId}}";
             
-            // Open the LinkedIn Auth URL in a new tab
-            var connectUrl = "https://www.pinterest.com/oauth/?client_id={{settings.pinterestClientId}}&redirect_uri={{siteUrl}}admin/convergine-socialbuddy/pin_auth&response_type=code&scope=boards:read,boards:write,pins:read,pins:write,user_accounts:read&state={{ settings.apiKey }}";
+            // Open the Pinterest Auth URL in a new tab
+            var connectUrl = "https://www.pinterest.com/oauth/?client_id={{settings.pinterestClientId}}&redirect_uri={{siteUrl | url_encode}}admin/convergine-socialbuddy/pin_auth&response_type=code&scope=boards:read,pins:read,pins:write,user_accounts:read";
             window.open(connectUrl, '_blank');            
             
             // Show loader
-            var loader = document.getElementById('settings-connect-loader');
-            loader.style.display = 'inline';
+            var loader = document.getElementById('connect-loader');
+            if (loader) loader.style.display = 'inline';
 
-            function checkInConnection() {
-                fetch("{{siteUrl}}admin/convergine-socialbuddy/platform?platform=linkedin&apikey=" + apiKey)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.connected) {
-                            window.location.reload();
-                        } else {
-                            console.log('CALL check connect linkedin');
-                            setTimeout(checkInConnection, 2000);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        // Optionally re-enable the button and hide loader on error
-                        button.disabled = false;
-                        loader.style.display = 'none';
-                    });
+            // Function to periodically check if Pinterest is connected
+            function checkPinConnection() {
+                fetch("{{siteUrl}}admin/convergine-socialbuddy/pin-conn", { 
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.pinterestConnected) {
+                        window.location.reload();
+                    } else {
+                        // Check again after a delay
+                        setTimeout(checkPinConnection, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error checking Pinterest connection:", error);
+                    button.disabled = false;
+                    if (loader) loader.style.display = 'none';
+                });
             }
-
+            
             // Start the polling
-            checkInConnection();
+            checkPinConnection();
         });
 
 
-        function disconnectPinterest() {
+        function disconnectPinterest(event) {
             if (!confirm('Are you sure you want to disconnect Pinterest?')) {
                 return;
             }
 
-            fetch("{{siteUrl}}admin/convergine-socialbuddy/disconnect?platform=facebook&apikey=" + apiKey, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-Token': Craft.csrfTokenValue,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload(); // Reload the page to reflect changes
-                } else {
-                    alert('Failed to disconnect Pinterest.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while disconnecting Pinterest.');
-            });        
+            var button = event.target;
+            button.disabled = true;
+
+            fetch("{{siteUrl}}admin/convergine-socialbuddy/disconnect?platform=pinterest", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert("Failed to disconnect: " + (data.message || "Unknown error"));
+                        button.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error disconnecting Pinterest:", error);
+                    button.disabled = false;
+                    alert("An error occurred. Please try again.");
+                });
         }
     </script>
 {% endblock %}
