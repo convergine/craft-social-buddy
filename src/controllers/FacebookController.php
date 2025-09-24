@@ -13,7 +13,7 @@ use Craft;
 class FacebookController extends Controller
 {
     // Allow anonymous access to the 'fb-auth' action
-    protected array|int|bool $allowAnonymous = ['fb-auth','fb-conn','ig-conn'];
+    protected array|int|bool $allowAnonymous = ['fb-auth','fb-conn','ig-conn','submit-report'];
 
     public function beforeAction($action): bool
     {
@@ -28,6 +28,14 @@ class FacebookController extends Controller
         $request = Craft::$app->getRequest();
         $code = $request->getQueryParam('code');
         $state = $request->getQueryParam('state');
+        $siteUrl = '';
+
+        if ($state) {
+            // get first letter of string $state and put it to $state back
+            $state = substr($state, 0, 1);
+        } else {
+            $state = 'F';
+        }
 
         if ($code) {
             // Fetch your app credentials from settings or environment variables
@@ -36,12 +44,12 @@ class FacebookController extends Controller
             /** @var \convergine\socialbuddy\models\Settings $settings */
             $settings = $plugin->getSettings();
 
-            if ($state == 'I') {
-                $clientId = $settings->$facebookClientId;
-                $clientSecret = $settings->$facebookClientSecret;
+            if ($state == 'F') {
+                $clientId = $settings->{'facebookClientId'};
+                $clientSecret = $settings->{'facebookClientSecret'};
             } else {
-                $clientId = $settings->$instagramClientId;
-                $clientSecret = $settings->$instagramClientSecret;
+                $clientId = $settings->{'instagramClientId'};
+                $clientSecret = $settings->{'instagramClientSecret'};
 
             }
             $siteUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
@@ -117,18 +125,18 @@ class FacebookController extends Controller
 
                             // Step 5: Store information in settings
                             if ($state == 'I') {
-                                $settings->instagramConnected = 1;
-                                $settings->instagramAccessToken = $pageAccessToken;
-                                $settings->instagramPageId = $pageId;
-                                $settings->instagramAccountName = $pageName;
-                                $settings->instagramAccountImageURL = $pagePictureUrl;
+                                $settings->{'instagramConnected'} = 1;
+                                $settings->{'instagramAccessToken'} = $pageAccessToken;
+                                $settings->{'instagramPageId'} = $pageId;
+                                $settings->{'instagramAccountName'} = $pageName;
+                                $settings->{'instagramAccountImageURL'} = $pagePictureUrl;
                             }
                             else {
-                                $settings->facebookConnected = 1;
-                                $settings->facebookAccessToken = $pageAccessToken;
-                                $settings->facebookPageId = $pageId;
-                                $settings->facebookAccountName = $pageName;
-                                $settings->facebookAccountImageURL = $pagePictureUrl;
+                                $settings->{'facebookConnected'} = 1;
+                                $settings->{'facebookAccessToken'} = $pageAccessToken;
+                                $settings->{'facebookPageId'} = $pageId;
+                                $settings->{'facebookAccountName'} = $pageName;
+                                $settings->{'facebookAccountImageURL'} = $pagePictureUrl;
                             }
 
                             // Save the updated settings
@@ -171,14 +179,14 @@ class FacebookController extends Controller
                     $errorMessage = $errorData['error']['message'] ?? $errorMessage;
                 }
 
-                Craft::error('Error during Facebook OAuth flow: ' . $errorMessage, __METHOD__);
+                Craft::error('Error during Facebook OAuth flow: ' . $errorMessage . ' SITE_URL: ' . $siteUrl, __METHOD__);
 
                 return $this->renderTemplate('convergine-socialbuddy/auth-error', [
                     'error' => $errorMessage,
                 ]);
             } catch (\Exception $e) {
                 // Handle other exceptions
-                Craft::error('Error during Facebook OAuth flow: ' . $e->getMessage(), __METHOD__);
+                Craft::error('Exception during Facebook OAuth flow: ' . $e->getMessage(), __METHOD__);
 
                 return $this->renderTemplate('convergine-socialbuddy/auth-error', [
                     'error' => $e->getMessage(),
@@ -234,7 +242,68 @@ class FacebookController extends Controller
         ]);
     }
 
+    /**
+     * Calls the report API with website URL and email
+     *
+     * @param string $websiteUrl
+     * @param string $email
+     * @return array
+     */
+    public function callReportApi(string $websiteUrl, string $email): array
+    {
+        try {
+            // Create a Guzzle client
+            $client = new Client();
 
+            // Make POST request to the API
+            $response = $client->post('https://api.carebots.io/api/website_analyze_email', [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'url' => $websiteUrl,
+                    'email' => $email,
+                ],
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Failed to decode JSON response: ' . json_last_error_msg(),
+                ];
+            }
+
+            return $data;
+
+        } catch (RequestException $e) {
+            // Handle HTTP request exceptions
+            $errorResponse = $e->getResponse();
+            $errorMessage = $e->getMessage();
+
+            if ($errorResponse) {
+                $errorBody = $errorResponse->getBody();
+                $errorData = json_decode($errorBody, true);
+                $errorMessage = $errorData['error']['message'] ?? $errorMessage;
+            }
+
+            Craft::error('Error during report API call: ' . $errorMessage, __METHOD__);
+
+            return [
+                'status' => 'error',
+                'message' => $errorMessage,
+            ];
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            Craft::error('Error during report API call: ' . $e->getMessage(), __METHOD__);
+
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 
 }
 

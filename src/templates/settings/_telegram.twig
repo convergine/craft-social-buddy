@@ -24,6 +24,15 @@
 
         {% else %}
 
+        <p>
+            To set up Telegram integration, you'll need to:
+            <ol>
+                <li>Create a Telegram bot by messaging <a href="https://t.me/botfather" target="_blank">@BotFather</a></li>
+                <li>Get your bot token from BotFather</li>
+                <li>Add your bot as an admin to your Telegram channel</li>
+                <li>Enter your channel name (without @) and bot token below</li>
+            </ol>
+        </p>
 
         {{ forms.autosuggestField({
             label: 'Telegram Channel Name'|t('convergine-socialbuddy'),
@@ -33,17 +42,50 @@
             suggestEnvVars: true,
         }) }}
 
-        <div style="display: flex; align-items: center;">
-            {{ forms.autosuggestField({
+        {{ forms.autosuggestField({
             label: 'Bot token'|t('convergine-socialbuddy'),
             name: 'telegramBotToken',
             value: settings.telegramBotToken,
-            instructions: 'Usually you know it from @BotFather during bot registration process. Do not forget to add this bot to channel admins'|t('convergine-socialbuddy'),
+            instructions: 'Get this from @BotFather when creating your bot. Make sure to add this bot as an admin to your channel.'|t('convergine-socialbuddy'),
             suggestEnvVars: true,
         }) }}
-        </div>
+
+        {% if settings.telegramChannelAccount and settings.telegramBotToken %}
+            <div style="display: flex; align-items: center; margin-top: 20px; padding: 15px; background: #f0f8ff; border: 1px solid #b3d9ff; border-radius: 4px;">
+                <span style="color: #0066cc; font-weight: bold;">✓ Connected to Telegram channel: @{{ settings.telegramChannelAccount }}</span>
+                <button type="button" class="btn secondary" style="margin-left: 15px;" onclick="disconnectTelegram(event)">
+                    Disconnect
+                </button>
+            </div>
+        {% endif %}
 
         {% endif %}
 
     {% endnamespace %}
+
+    <script>
+        function disconnectTelegram(event) {
+            if (!confirm('Are you sure you want to disconnect Telegram?')) {
+                return;
+            }
+
+            var button = event.target;
+            button.disabled = true;
+
+            fetch("{{ siteUrl }}admin/convergine-socialbuddy/disconnect?platform=telegram", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.connected) {
+                        window.location.reload();
+                    } else {
+                        console.log('Failed to disconnect Telegram');
+                        button.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    button.disabled = false;
+                });
+        }
+    </script>
 {% endblock %}

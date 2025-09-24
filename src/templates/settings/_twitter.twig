@@ -13,11 +13,11 @@
     <input type="hidden" name="pluginHandle" value="convergine-socialbuddy">
     {% namespace 'settings' %}
 
-        {% if settings.license == 'free' %}
+        {% if settings.license == 'lite' %}
 
             <div class="warning" style="padding: 20px; background: #fff4e5; border: 1px solid #ffd9b3; border-radius: 4px; color: #663d00;">
 
-            This social platform is included in LITE/PRO versions of the plugin. Please upgrade at <a href="https://plugins.craftcms.com">plugins.craftcms.com</a>
+            This social platform is included in STANDARD/PRO versions of the plugin. Please upgrade at <a href="https://plugins.craftcms.com">plugins.craftcms.com</a>
 
             </div>
 
@@ -51,10 +51,12 @@
         {% else %}
             <div style="display: flex; align-items: center; margin-top: 10px;">
                 <span>Connected to</span>
-                <img src="" alt="Profile Image" style="margin-left: 10px; height: 50px; vertical-align: middle;">
-                <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;"></span>
+                {% if settings.twitterAccountImageURL %}
+                    <img src="{{ settings.twitterAccountImageURL }}" alt="Profile Image" style="margin-left: 10px; height: 50px; width: 50px; border-radius: 50%; vertical-align: middle;">
+                {% endif %}
+                <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;">{{ settings.twitterAccountName ?: 'Twitter Account' }}</span>
                 <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectTwitter()">
-                    <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="connect-loader" style="display:none; margin-left: 5px;" alt="Loading">
+                    <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="disconnect-loader" style="display:none; margin-left: 5px;" alt="Loading">
                     Disconnect
                 </button>
             </div>
@@ -70,69 +72,40 @@
             // Disable the button and show loader
             var button = event.target;
             button.disabled = true;
-
-            // Get the API key from the settings object in the template
-            var apiKey = "{{settings.apiKey}}";
-            
-            // Open the Twitter Auth URL in a new tab
-            var connectUrl = "https://api.x.com/oauth/authorize?oauth_token={{settings.twitterClientSecret}}&apikey=" + apiKey;
-            window.open(connectUrl, '_blank');            
             
             // Show loader
-            var loader = document.getElementById('settings-connect-loader');
-            loader.style.display = 'inline';
-
-            function checkXConnection() {
-                fetch("{{siteUrl}}admin/convergine-socialbuddy/platform?platform=twitter&apikey=" + apiKey)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.connected) {
-                            window.location.reload();
-                        } else {
-                            console.log('CALL check connect twitter');
-                            setTimeout(checkXConnection, 2000);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        // Optionally re-enable the button and hide loader on error
-                        button.disabled = false;
-                        loader.style.display = 'none';
-                    });
+            var loader = document.getElementById('connect-loader');
+            if (loader) {
+                loader.style.display = 'inline';
             }
 
-            // Start the polling
-            checkXConnection();
+            // Redirect to our Twitter OAuth flow
+            window.location.href = "{{siteUrl}}admin/convergine-socialbuddy/twitter_auth";
         });
 
         function disconnectTwitter() {
-
-            if (!confirm('Are you sure you want to disconnect Twitter?')) {
-                return;
-            }
-
-            // Get the API key from the settings object in the template
-            var apiKey = "{{settings.apiKey}}";
-            
-            // Show loader
-            var loader = document.getElementById('settings-connect-loader');
-            loader.style.display = 'inline';
-
-            fetch("https://api-dev.carebots.ai/api/smp/disconnect?platform=twitter&apikey=" + apiKey, { method: "POST" })
+            if (confirm('Are you sure you want to disconnect your Twitter account?')) {
+                fetch("{{siteUrl}}admin/convergine-socialbuddy/twitter_disconnect", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '{{ csrfToken }}'
+                    }
+                })
                 .then(response => response.json())
                 .then(data => {
-                    if (!data.connected) {
+                    if (data.success) {
                         window.location.reload();
                     } else {
-                        console.log('CALL check connect twitter');
+                        alert('Failed to disconnect: ' + (data.error || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    // Optionally re-enable the button and hide loader on error
-                    button.disabled = false;
-                    loader.style.display = 'none';
+                    alert('An error occurred while disconnecting');
                 });
+            }
         }
+
     </script>
 {% endblock %}

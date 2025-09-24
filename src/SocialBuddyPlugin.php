@@ -4,6 +4,7 @@ namespace convergine\socialbuddy;
 use convergine\socialbuddy\fields\SocialBuddyField;
 use convergine\socialbuddy\models\SettingsModel;
 use convergine\socialbuddy\queue\SubmitPost;
+use convergine\socialbuddy\console\SocialBuddyController;
 use convergine\socialbuddy\services\Facebook;
 use convergine\socialbuddy\services\Instagram;
 use convergine\socialbuddy\services\Twitter;
@@ -30,369 +31,15 @@ use craft\events\DefineHtmlEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\ElementEvent;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\services\Fields;
 use craft\web\twig\variables\CraftVariable;
+use convergine\socialbuddy\variables\BuddyVariable;
 use craft\web\UrlManager;
+use craft\console\Application as ConsoleApplication;
 use yii\base\BootstrapInterface;
-
-
-class StatusChangeEvent extends Event
-{
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var ElementInterface|null The element model associated with the event.
-     */
-    public $element;
-
-    /**
-     * @var string Previous status
-     */
-    public $statusBeforeSave = '';
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @param string $nameOfStatus
-     *
-     * @return bool
-     */
-    public function changedTo(string $nameOfStatus): bool
-    {
-        return ($this->element->getStatus() === $nameOfStatus);
-    }
-
-    /**
-     * @return bool
-     */
-    public function changedToPublished(): bool
-    {
-       return in_array($this->element->getStatus(), [Entry::STATUS_LIVE, Element::STATUS_ENABLED]);
-    }
-
-    /**
-     * @return bool
-     */
-    public function changedToUnpublished(): bool
-    {
-        return !$this->changedToPublished();
-    }
-
-    /**
-     * @return ElementInterface|null
-     */
-    public function getElement()
-    {
-        return $this->element;
-    }
-}
-
-
-class ScheduledElements extends Controller
-{
-    // Constants
-    // =========================================================================
-
-    const LAST_CHECK_CACHE_KEY = 'lastScheduledCheck';
-    const LAST_CHECK_DEFAULT_INTERVAL = '-24 hours';
-    const DATE_FORMAT = 'Y-m-d H:i';
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var CacheInterface
-     */
-    protected $cache;
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Element Status Change
-     *
-     * @param string $id
-     * @param Module $module
-     * @param CacheInterface $cache
-     * @param array $config
-     */
-    public function __construct(string $id, Module $module, CacheInterface $cache, array $config = [])
-    {
-        $this->cache = $cache;
-        parent::__construct($id, $module, $config);
-    }
-
-
-    /**
-     * Checks for scheduled Entries, call this command via cron
-     *
-     * @param string $forcedCheckInterval Time string of lower bound of the range, e.g. '-2 hours'
-     *
-     * @return int
-     */
-    public function actionScheduled($forcedCheckInterval = null)
-    {
-        $lastCheck = $this->cache->exists(self::LAST_CHECK_CACHE_KEY)
-            ? $this->cache->get(self::LAST_CHECK_CACHE_KEY)
-            : Db::prepareDateForDb((new \DateTime())->modify(self::LAST_CHECK_DEFAULT_INTERVAL));
-
-        if ($forcedCheckInterval) {
-            $lastCheck = Db::prepareDateForDb((new \DateTime())->modify($forcedCheckInterval));
-        }
-
-        $now       = Db::prepareDateForDb(new \DateTime());
-        $published = $this->getPublishedEntries($lastCheck, $now);
-        $expired   = $this->getExpiredEntries($lastCheck, $now);
-        $entries   = array_merge($published, $expired);
-
-        // Remember this check
-        $this->cache->set(self::LAST_CHECK_CACHE_KEY, $now);
-
-        // Print info
-        ConsoleHelper::output(sprintf("> Expired Entries: %d", count($expired)));
-        ConsoleHelper::output(sprintf("> Published Entries: %d", count($published)));
-        ConsoleHelper::output(sprintf("> Range: %s to %s", $lastCheck, $now));
-
-        if (!count($entries)) {
-            return ExitCode::OK;
-        }
-
-        $this->fireEvent($published, Entry::STATUS_PENDING);
-        $this->fireEvent($expired, Entry::STATUS_LIVE);
-
-        $this->drawTable($entries);
-
-        return ExitCode::OK;
-    }
-
-    /**
-     * @param array $entries
-     */
-    protected function drawTable(array $entries)
-    {
-        $rows = [];
-
-        foreach ($entries as $entry) {
-            /** @var Entry $entry */
-            $postDateString   = $entry->postDate ? $entry->postDate->format(self::DATE_FORMAT) : '-';
-            $expiryDateString = $entry->expiryDate ? $entry->expiryDate->format(self::DATE_FORMAT) : '-';
-            $rows[]           = [$entry->title, $postDateString, $expiryDateString];
-        };
-
-        echo Table::widget([
-            'headers' => ['Title', 'PostDate', 'ExpiryDate'],
-            'rows'    => $rows,
-        ]);
-
-    }
-
-    /**
-     * @param array  $elements
-     * @param string $previousStatus
-     */
-    protected function fireEvent(array $elements, $previousStatus = '')
-    {
-        if (count($elements) === 0) {
-            return;
-        }
-        foreach ($elements as $element) {
-            Event::trigger(
-                ElementStatusEvents::class,
-                ElementStatusEvents::EVENT_STATUS_CHANGED,
-                new StatusChangeEvent([
-                    'element'          => $element,
-                    'statusBeforeSave' => $previousStatus
-                ])
-            );
-        }
-    }
-
-
-    /**
-     * @param $rangeStart
-     * @param $rangeEnd
-     *
-     * @return array
-     */
-    protected function getPublishedEntries($rangeStart, $rangeEnd): array
-    {
-        // TODO: Support Product and other Elements with postDate
-
-        // Entries published within time frame
-        $entries = (Entry::find()
-            ->where(['between', 'postDate', $rangeStart, $rangeEnd])
-            ->withStructure(false)
-            ->orderBy(null)
-            ->status('live')
-        )->all();
-
-        // Exclude manually published entries (postDate ≅ dateUpdated)
-        return array_filter($entries, function (Entry $item) {
-            $diffInSeconds = abs($item->postDate->getTimestamp() - $item->dateUpdated->getTimestamp());
-            return ($diffInSeconds > 60);
-        });
-    }
-
-    /**
-     * @param $rangeStart
-     * @param $rangeEnd
-     *
-     * @return Entry[]
-     */
-    protected function getExpiredEntries($rangeStart, $rangeEnd): array
-    {
-        // TODO: Support Product and other Elements with expiryDate
-
-        return (Entry::find()
-            ->where(['between', 'expiryDate', $rangeStart, $rangeEnd])
-            ->withStructure(false)
-            ->orderBy(null)
-            ->status('expired')
-        )->all();
-    }
-}
-
-class ElementStatusBehavior extends Behavior
-{
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var string
-     */
-    public $statusBeforeSave = '';
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Saves the status of an element before it is saved
-     */
-    public function rememberPreviousStatus()
-    {
-        /** @var Element $element */
-        $element = $this->owner;
-
-        $originalElement = Craft::$app->getElements()->getElementById(
-            $element->id,
-            get_class($element),
-            $element->siteId
-        );
-
-        $this->statusBeforeSave = $originalElement === null ?: $originalElement->getStatus();
-    }
-
-    /**
-     * Triggers an event if the status has changed
-     */
-    public function fireEventOnChange()
-    {
-        /** @var Element $element */
-        $element = $this->owner;
-
-        // Nothing changed?
-        if ($this->statusBeforeSave === $element->getStatus()) {
-            return;
-        }
-
-        if (Event::hasHandlers(ElementStatusEvents::class, ElementStatusEvents::EVENT_STATUS_CHANGED)) {
-            Event::trigger(
-                ElementStatusEvents::class,
-                ElementStatusEvents::EVENT_STATUS_CHANGED,
-                new StatusChangeEvent([
-                    'element' => $element,
-                    'statusBeforeSave' => $this->statusBeforeSave
-                ])
-            );
-        }
-    }
-}
-
-
-class ElementStatusEvents extends Component implements BootstrapInterface
-{
-    // Constants
-    // =========================================================================
-
-    const EVENT_STATUS_CHANGED = 'statusChanged';
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Register console command
-     *
-     * @param CraftConsoleApp $app
-     * @param string $group
-     */
-    public static function registerScheduledCommand(CraftConsoleApp $app, $group = 'element-status-events')
-    {
-        $app->controllerMap[$group] = ScheduledElements::class;
-    }
-
-    /**
-     * Bootstrap the extension
-     *
-     * @param YiiApp $app
-     */
-    public function bootstrap($app)
-    {
-        // Make sure it's Craft
-        if (!($app instanceof CraftWebApp || $app instanceof CraftConsoleApp)) {
-            return;
-        }
-
-        Event::on(Elements::class, Elements::EVENT_BEFORE_SAVE_ELEMENT, [$this, 'rememberPreviousStatus']);
-        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'fireEventOnChange']);
-
-        if ($app instanceof CraftConsoleApp) {
-            // Tell Craft about the concrete implementation of CacheInterface
-            Craft::$container->set(CacheInterface::class, Craft::$app->getCache());
-            self::registerScheduledCommand($app);
-        }
-    }
-
-    /**
-     * Register event listener
-     *
-     * @param ElementEvent $event
-     */
-    public function rememberPreviousStatus(ElementEvent $event)
-    {
-        /** @var Element|ElementStatusBehavior $element */
-        $element = $event->element;
-
-        // Attach behavior to access the status later
-        $element->attachBehavior('elementStatusEvents', ElementStatusBehavior::class);
-
-        // No need to remember anything
-        if ($event->isNew) {
-            return;
-        }
-
-        $element->rememberPreviousStatus();
-    }
-
-    /**
-     * Register event listener
-     *
-     * @param ElementEvent $event
-     */
-    public function fireEventOnChange(ElementEvent $event)
-    {
-        /** @var Element|ElementStatusBehavior $element */
-        $element = $event->element;
-
-        // Fire ElementStatusEvents::EVENT_STATUS_CHANGED
-        if ($element->getBehavior('elementStatusEvents') !== null) {
-            $element->fireEventOnChange();
-        }
-    }
-}
 
 
 /**
@@ -410,15 +57,15 @@ class SocialBuddyPlugin extends Plugin {
 	public const PLATFORM_MEDIUM = 'medium';
 	public const PLATFORM_LINKEDIN = 'linkedin';
 
-	public const EDITION_FREE = 'free';
 	public const EDITION_LITE = 'lite';
+	public const EDITION_STANDARD = 'standard';
     public const EDITION_PRO = 'pro';
 
     public static function editions(): array
     {
         return [
-			self::EDITION_FREE,
             self::EDITION_LITE,
+			self::EDITION_STANDARD,
             self::EDITION_PRO,
         ];
     }
@@ -435,6 +82,7 @@ class SocialBuddyPlugin extends Plugin {
 		$this->_setComponents();
 		$this->_setRoutes();
 		$this->_setEvents();
+		$this->_setConsoleCommands();
 	}
 
 	protected function _setComponents() : void {
@@ -459,6 +107,19 @@ class SocialBuddyPlugin extends Plugin {
 			function (RegisterUrlRulesEvent $event) {
                 $event->rules['convergine-socialbuddy/fb_auth'] = 'convergine-socialbuddy/facebook/fb-auth';
                 $event->rules['convergine-socialbuddy/fb_conn'] = 'convergine-socialbuddy/facebook/fb-conn';
+                $event->rules['convergine-socialbuddy/pin_auth'] = 'convergine-socialbuddy/pinterest/pin-auth';
+                $event->rules['convergine-socialbuddy/pin_conn'] = 'convergine-socialbuddy/pinterest/pin-conn';
+                $event->rules['convergine-socialbuddy/pin_disconnect'] = 'convergine-socialbuddy/pinterest/pin-disconnect';
+                $event->rules['convergine-socialbuddy/ig_conn'] = 'convergine-socialbuddy/facebook/ig-conn';
+                $event->rules['convergine-socialbuddy/linkedin-auth'] = 'convergine-socialbuddy/linkedin/linkedin-auth';
+                $event->rules['convergine-socialbuddy/linkedin-conn'] = 'convergine-socialbuddy/linkedin/linkedin-conn';
+                $event->rules['convergine-socialbuddy/twitter_auth'] = 'convergine-socialbuddy/twitter/twitter-auth';
+                $event->rules['convergine-socialbuddy/twitter_callback'] = 'convergine-socialbuddy/twitter/twitter-callback';
+                $event->rules['convergine-socialbuddy/twitter_conn'] = 'convergine-socialbuddy/twitter/twitter-conn';
+                $event->rules['convergine-socialbuddy/twitter_disconnect'] = 'convergine-socialbuddy/twitter/twitter-disconnect';
+                $event->rules['convergine-socialbuddy/medium/connect'] = 'convergine-socialbuddy/medium/connect';
+                $event->rules['convergine-socialbuddy/medium/disconnect'] = 'convergine-socialbuddy/medium/disconnect';
+                $event->rules['convergine-socialbuddy/medium/status'] = 'convergine-socialbuddy/medium/status';
                 $event->rules['convergine-socialbuddy/disconnect'] = 'convergine-socialbuddy/settings/disconnect';
 				$event->rules['convergine-socialbuddy/dashboard'] = 'convergine-socialbuddy/dashboard';
                 $event->rules['convergine-socialbuddy/settings/general'] = 'convergine-socialbuddy/settings/general';
@@ -505,30 +166,29 @@ class SocialBuddyPlugin extends Plugin {
             Element::EVENT_DEFINE_ADDITIONAL_BUTTONS,
             function (DefineHtmlEvent $event) {
                 if (($event->sender->enabled && $event->sender->getEnabledForSite())) {
-                    $event->html .= $this->post->getSubmitControl();
+                    // Check if this entry type is enabled for social posting
+                    if ($event->sender instanceof Entry) {
+                        $settings = $this->getSettings();
+                        $sectionHandle = $event->sender->getSection()->handle;
+                        $entryTypeHandle = $event->sender->getType()->handle;
+                        $isEnabled = $settings->getEnabled($sectionHandle, $entryTypeHandle);
+                        
+                        if ($isEnabled) {
+                            $event->html .= $this->post->getSubmitControl();
+                        }
+                    } else {
+                        // For non-Entry elements, do not show any additional controls
+                    }
                 }
             }
         );
 
-        $settings = $this->getSettings();
-        if($settings->mode == 'automatic') {
-            Event::on(
-				ElementStatusEvents::class, 
-				ElementStatusEvents::EVENT_STATUS_CHANGED, 
-                function(StatusChangeEvent $event) {
-					$isLive      = $event->changedToPublished();
-					if($isLive) {
-                        $entry = $event->sender;
-                        Queue::push(
-                            new SubmitPost([
-                                'entryId' => $entry->id,
-                                'platform' => 'all',
-                            ]),10,0
-                        );
-                    }
-                }
-            );
-        }
+	}
+
+	protected function _setConsoleCommands(): void {
+		if (Craft::$app instanceof ConsoleApplication) {
+			Craft::$app->controllerMap['social-buddy'] = SocialBuddyController::class;
+		}
 	}
 
 	protected function createSettingsModel(): SettingsModel {

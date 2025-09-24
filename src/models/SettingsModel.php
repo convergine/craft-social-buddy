@@ -10,7 +10,7 @@ class SettingsModel extends Model {
     public string $license = 'free';
     public string $apiKey = '';        
 
-    public int $pinterestConnected = 1;
+    public int $pinterestConnected = 0;
     public string $pinterestDefaultBoard = '';
     public string $pinterestAccountImageURL = '';
     public string $pinterestAccountName = '';
@@ -20,7 +20,7 @@ class SettingsModel extends Model {
     public string $pinterestPageId = '';
 
 
-    public int $facebookConnected = 1;
+    public int $facebookConnected = 0;
     public string $facebookAccountImageURL = '';
     public string $facebookAccountName = '';
     public string $facebookClientId = '';
@@ -28,7 +28,7 @@ class SettingsModel extends Model {
     public string $facebookAccessToken = '';
     public string $facebookPageId = '';
 
-    public int $instagramConnected = 1;
+    public int $instagramConnected = 0;
     public string $instagramAccountImageURL = '';
     public string $instagramAccountName = '';
     public string $instagramClientId = '';
@@ -37,22 +37,25 @@ class SettingsModel extends Model {
     public string $instagramPageId = '';
 
 
-    public int $twitterConnected = 1;
+    public int $twitterConnected = 0;
     public string $twitterAccountName = '';
     public string $twitterAccountImageURL = '';
     public string $twitterClientId = '';
     public string $twitterClientSecret = '';
     public string $twitterAccessToken = '';
+    public string $twitterAccessTokenSecret = '';
     public string $twitterPageId = '';
 
 
     public string $telegramChannelAccount = '';
     public string $telegramBotToken = '';
 
-    public int $mediumConnected = 1;
+    public int $mediumConnected = 0;
     public string $mediumIntegrationToken = '';
+    public string $mediumAccessToken = '';
+    public string $mediumAccountName = '';
 
-    public int $linkedinConnected = 1;
+    public int $linkedinConnected = 0;
     public string $linkedinAccountName = '';
     public string $linkedinAccountImageURL = '';
     public string $linkedinClientId = '';
@@ -99,11 +102,12 @@ class SettingsModel extends Model {
     }
 
     public function isTelegramEnabled(): bool {
-        return !empty($this->telegramChannelAccount);
+        return !empty($this->telegramChannelAccount) && !empty($this->telegramBotToken);
     }
 
     public function isMediumEnabled(): bool {
-        return $this->mediumConnected > 0;
+        // Medium is enabled if we have an integration token (connection status will be validated at publish time)
+        return !empty($this->mediumIntegrationToken);
     }
 
     public function isLinkedinEnabled(): bool {

@@ -58,7 +58,7 @@
 
         {% if not settings.pinterestConnected or settings.pinterestConnected == 0 %}
             <button type="button" class="btn primary connect-btn" style="margin-top: 20px;">
-                <img src="{{ alias('@web/assets/images/ajax.gif') }}" id="connect-loader" style="display:none; margin-left: 5px;" alt="Loading">
+                <span id="connect-loader" style="display:none; margin-left: 5px;">Loading...</span>
                 {{ 'Connect' | t('convergine-socialbuddy') }}
             </button>
         {% else %}
@@ -107,7 +107,7 @@
             var clientId = "{{settings.pinterestClientId}}";
             
             // Open the Pinterest Auth URL in a new tab
-            var connectUrl = "https://www.pinterest.com/oauth/?client_id={{settings.pinterestClientId}}&redirect_uri={{siteUrl | url_encode}}admin/convergine-socialbuddy/pin_auth&response_type=code&scope=boards:read,pins:read,pins:write,user_accounts:read";
+            var connectUrl = "https://www.pinterest.com/oauth/?client_id={{settings.pinterestClientId}}&redirect_uri={{ siteUrl | url_encode }}admin/convergine-socialbuddy/pin_auth&response_type=code&scope=boards:read,pins:read,pins:write,user_accounts:read";
             window.open(connectUrl, '_blank');            
             
             // Show loader
@@ -116,7 +116,7 @@
 
             // Function to periodically check if Pinterest is connected
             function checkPinConnection() {
-                fetch("{{siteUrl}}admin/convergine-socialbuddy/pin-conn", { 
+                fetch("{{ siteUrl }}admin/convergine-socialbuddy/pin-conn", { 
                     method: "GET",
                     headers: {
                         "Accept": "application/json"
@@ -150,21 +150,31 @@
 
             var button = event.target;
             button.disabled = true;
+            button.textContent = 'Disconnecting...';
 
-            fetch("{{siteUrl}}admin/convergine-socialbuddy/disconnect?platform=pinterest", { method: "POST" })
+            fetch("{{ siteUrl }}admin/convergine-socialbuddy/pin_disconnect", { 
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "X-CSRF-Token": "{{ craft.app.request.csrfToken }}"
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        Craft.cp.displayNotice('Pinterest disconnected successfully');
                         window.location.reload();
                     } else {
-                        alert("Failed to disconnect: " + (data.message || "Unknown error"));
+                        Craft.cp.displayError("Failed to disconnect: " + (data.error || "Unknown error"));
                         button.disabled = false;
+                        button.textContent = 'Disconnect';
                     }
                 })
                 .catch(error => {
                     console.error("Error disconnecting Pinterest:", error);
+                    Craft.cp.displayError("An error occurred. Please try again.");
                     button.disabled = false;
-                    alert("An error occurred. Please try again.");
+                    button.textContent = 'Disconnect';
                 });
         }
     </script>

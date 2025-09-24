@@ -49,7 +49,7 @@ class SocialBuddyField extends Field {
             $value = Json::decode($value);
         }
 
-        if ($element !== null && $element->{$imageFieldHandle} && !is_string($element->{$imageFieldHandle}) && !isset($value['image'])) {
+        if ( $imageFieldHandle && $element !== null && $element->{$imageFieldHandle} && !is_string($element->{$imageFieldHandle}) && !isset($value['image'])) {
             $elements = $element->{$imageFieldHandle}->all();
         } else {
             $elements = [];
@@ -75,6 +75,7 @@ class SocialBuddyField extends Field {
             'useSingleFolder' => true,
             'viewMode' => 'large',
             'showSiteMenu' => false,
+            'defaultPlacement' => 'end',
             'sources' => '*',
             'condition' => false,
             'sourceElementId' => null,
@@ -89,7 +90,7 @@ class SocialBuddyField extends Field {
         ]);
 
         // Get the entry's text field dynamically
-        $entryText = $element !== null && $element->{$textFieldHandle} ? $element->{$textFieldHandle} : '';
+        $entryText = $textFieldHandle && $element !== null && $element->{$textFieldHandle} ? $element->{$textFieldHandle} : '';
 
         $textFieldHtml = Craft::$app->view->renderTemplate('_components/fieldtypes/PlainText/input', [
             'name' => $this->handle . '[text]',
@@ -181,10 +182,17 @@ class SocialBuddyField extends Field {
             'postfix' => !empty($value['postfix']) ? $value['postfix'] : $postfix,
             'isPinterestEnabled' => $settings->isPinterestEnabled(),
             'isFacebookEnabled' => $settings->isFacebookEnabled(),
+            'isInstagramEnabled' => $settings->isInstagramEnabled(),
+            'isTwitterEnabled' => $settings->isTwitterEnabled(),
+            'isLinkedinEnabled' => $settings->isLinkedinEnabled(),
             'isTelegramEnabled' => $settings->isTelegramEnabled(),
             'isMediumEnabled' => $settings->isMediumEnabled(),
-            'isInstagramEnabled' => $settings->isInstagramEnabled()
+            
+            'published' => isset($value['published']) ? $value['published'] : false
         ]);
+
+        // Add hidden field for published flag
+        $fieldHtml .= Html::hiddenInput($this->handle . '[published]', $value['published'] ?? false ? '1' : '0');
 
         //$fieldHtml = Json::encode($value);
 

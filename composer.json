@@ -46,8 +46,7 @@
         "hasCpSettings": true,
         "hasCpSection": true,
         "changelogUrl": "https://github.com/convergine/craft-social-buddy/blob/master/CHANGELOG.md",
-        "class": "convergine\\socialbuddy\\SocialBuddyPlugin",
-        "bootstrap": "convergine\\socialbuddy\\ElementStatusEvents"
+        "class": "convergine\\socialbuddy\\SocialBuddyPlugin"
     },
     "config": {
         "allow-plugins": {

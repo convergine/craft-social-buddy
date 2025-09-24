@@ -12,8 +12,8 @@ use Craft;
 
 class PinterestController extends Controller
 {
-    // Allow anonymous access to the 'pin-auth' action
-    protected array|int|bool $allowAnonymous = ['pin-auth','pin-conn'];
+    // Allow anonymous access to the 'pin-auth', 'pin-conn', and 'pin-disconnect' actions
+    protected array|int|bool $allowAnonymous = ['pin-auth','pin-conn','pin-disconnect'];
 
     public function beforeAction($action): bool
     {
@@ -84,9 +84,14 @@ class PinterestController extends Controller
                         // Save settings
                         Craft::$app->getPlugins()->savePluginSettings(SocialBuddyPlugin::getInstance(), $settings->toArray());
                         
-                        // Redirect to settings page
-                        return $this->renderTemplate('convergine-socialbuddy/auth-success', [
-                            'message' => 'Pinterest connected successfully!',
+                        // Get site URL for link back
+                        $siteUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
+                        
+                        // Redirect to success page
+                        return $this->renderTemplate('convergine-socialbuddy/_layouts/_fb_success', [
+                            'socialMediaIcon' => 'pinterest.svg',
+                            'socialMediaName' => 'Pinterest',
+                            'linkBack' => $siteUrl . 'admin/convergine-socialbuddy/settings/pinterest',
                         ]);
                     } else {
                         throw new \Exception('Could not retrieve user information.');
@@ -148,6 +153,46 @@ class PinterestController extends Controller
             'accountName' => $settings->pinterestAccountName,
             'accountImageURL' => $settings->pinterestAccountImageURL,
         ]);
+    }
+
+    /**
+     * Disconnect Pinterest account
+     *
+     * @return Response
+     */
+    public function actionPinDisconnect(): Response
+    {
+        try {
+            // Get the plugin instance
+            $plugin = SocialBuddyPlugin::getInstance();
+            $settings = $plugin->getSettings();
+            /** @var \convergine\socialbuddy\models\Settings $settings */
+
+            // Clear Pinterest connection data
+            $settings->pinterestConnected = 0;
+            $settings->pinterestAccountName = '';
+            $settings->pinterestAccountImageURL = '';
+            $settings->pinterestAccessToken = '';
+            $settings->pinterestPageId = '';
+            
+            // Save settings
+            Craft::$app->getPlugins()->savePluginSettings($plugin, $settings->toArray());
+            
+            Craft::info("Pinterest account disconnected successfully", __METHOD__);
+            
+            return $this->asJson([
+                'success' => true,
+                'message' => 'Pinterest account disconnected successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            Craft::error("Error disconnecting Pinterest: " . $e->getMessage(), __METHOD__);
+            
+            return $this->asJson([
+                'success' => false,
+                'error' => 'Failed to disconnect Pinterest account'
+            ]);
+        }
     }
 }
 

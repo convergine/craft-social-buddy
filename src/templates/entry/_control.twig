@@ -2,15 +2,41 @@
 
 <input type="hidden" name="sb_platform" id="sb_platform" />
 <div>
-    <label id="context-label" class="visually-hidden">Publish</label>
-    <button type="button" class="btn menubtn sitemenubtn" data-icon="share" aria-labelledby="context-label">Publish</button>
-    <div class="menu">
-        <ul>
-            <li>
-                {% for key, val in social %}
-                    <a href="javascript:void(0);" class="social-buddy-publish" data-val="{{ val }}" data-brandicon="{{ key }}">Publish to {{ val }}</a>
-                {% endfor %}
-            </li>
-        </ul>
-    </div>
+    {% if social is empty %}
+        {# No social networks connected - show disabled button #}
+        <label id="context-label" class="visually-hidden">Publish</label>
+        <button type="button" 
+                class="btn menubtn sitemenubtn disabled" 
+                data-icon="share" 
+                aria-labelledby="context-label"
+                disabled>
+            Publish (Disabled)
+        </button>
+    {% else %}
+        {# Social networks available - show normal dropdown menu #}
+        <label id="context-label" class="visually-hidden">Publish</label>
+        <button type="button" class="btn menubtn sitemenubtn" data-icon="share" aria-labelledby="context-label">Publish</button>
+        <div class="menu">
+            <ul>
+                <li>
+                    {% for key, val in social %}
+                        <a href="javascript:void(0);" class="social-buddy-publish" data-val="{{ val }}" data-brandicon="{{ key }}">Publish to {{ val }}</a>
+                    {% endfor %}
+                </li>
+            </ul>
+        </div>
+    {% endif %}
 </div>
+
+<style>
+/* Custom styles for disabled button */
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn.disabled:hover {
+    background-color: inherit;
+    transform: none;
+}
+</style>

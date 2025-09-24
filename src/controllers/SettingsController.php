@@ -10,6 +10,126 @@ use Craft;
 class SettingsController extends Controller {
 
 
+    // Allow anonymous access to disconnect action
+    protected array|int|bool $allowAnonymous = ['disconnect'];
+
+    public $enableCsrfValidation = false; // Add this line to disable CSRF for all actions
+    
+    // disable CSRF only for specific actions:
+    public function beforeAction($action): bool
+    {
+        if ($action->id === 'disconnect') {
+            $this->enableCsrfValidation = false;
+        }
+        
+        return parent::beforeAction($action);
+    }
+
+    /**
+     * Disconnect a social media platform
+     *
+     * @return Response
+     */
+    public function actionDisconnect(): Response
+    {
+        // Get the platform parameter from the request
+        $platform = Craft::$app->getRequest()->getParam('platform');
+        
+        if (!$platform) {
+            return $this->asJson([
+                'success' => false,
+                'error' => 'Platform parameter is required'
+            ]);
+        }
+
+        // Get the plugin instance and settings
+        $plugin = SocialBuddyPlugin::getInstance();
+        $settings = $plugin->getSettings();
+
+        // Clear platform-specific settings based on the platform
+        switch ($platform) {
+            case 'facebook':
+                $settings->facebookConnected = 0;
+                $settings->facebookAccountImageURL = '';
+                $settings->facebookAccountName = '';
+                $settings->facebookAccessToken = '';
+                $settings->facebookPageId = '';
+                break;
+            
+            case 'pinterest':
+                $settings->pinterestConnected = 0;
+                $settings->pinterestAccountImageURL = '';
+                $settings->pinterestAccountName = '';
+                $settings->pinterestAccessToken = '';
+                $settings->pinterestPageId = '';
+                $settings->pinterestDefaultBoard = '';
+                break;
+            
+            case 'instagram':
+                $settings->instagramConnected = 0;
+                $settings->instagramAccountImageURL = '';
+                $settings->instagramAccountName = '';
+                $settings->instagramAccessToken = '';
+                $settings->instagramPageId = '';
+                break;
+            
+            case 'twitter':
+                $settings->twitterConnected = 0;
+                $settings->twitterAccountImageURL = '';
+                $settings->twitterAccountName = '';
+                $settings->twitterAccessToken = '';
+                $settings->twitterPageId = '';
+                break;
+            
+            case 'linkedin':
+                $settings->linkedinConnected = 0;
+                $settings->linkedinAccountImageURL = '';
+                $settings->linkedinAccountName = '';
+                $settings->linkedinAccessToken = '';
+                $settings->linkedinPageId = '';
+                break;
+            
+            case 'telegram':
+                $settings->telegramChannelAccount = '';
+                $settings->telegramBotToken = '';
+                break;
+            
+            case 'medium':
+                $settings->mediumConnected = 0;
+                $settings->mediumAccessToken = '';
+                break;
+            
+            default:
+                return $this->asJson([
+                    'success' => false,
+                    'error' => 'Unknown platform: ' . $platform
+                ]);
+        }
+
+        // Save the updated settings
+        $saved = Craft::$app->getPlugins()->savePluginSettings($plugin, $settings->toArray());
+
+        if ($saved) {
+            Craft::info("SocialBuddy: Disconnected {$platform} successfully", __METHOD__);
+            
+            // Return success response
+            return $this->asJson([
+                'success' => true,
+                'connected' => false,
+                'platform' => $platform,
+                'message' => ucfirst($platform) . ' disconnected successfully'
+            ]);
+        } else {
+            Craft::error("SocialBuddy: Failed to save settings after disconnecting {$platform}", __METHOD__);
+            
+            return $this->asJson([
+                'success' => false,
+                'error' => 'Failed to save settings'
+            ]);
+        }
+    }
+
+
     /**
      * @return Response
      */
@@ -41,9 +161,19 @@ class SettingsController extends Controller {
             $license = $platform->getLicense();
             $settings->license = $license;
         }
+
+        // Check if cron job is properly configured
+        $cronLastRun = Craft::$app->getCache()->get('socialbuddy_cron_last_run');
+        $cronConfigured = false;
+        
+        if ($cronLastRun !== false) {
+            // Check if cron job ran within the last 2 hours (7200 seconds)
+            $cronConfigured = (time() - $cronLastRun) <= 7200;
+        }
         
         return $this->renderTemplate('convergine-socialbuddy/settings/_general', [
             'settings' => $settings,
+            'cronConfigured' => $cronConfigured,
         ]);
     }
 
@@ -119,7 +249,8 @@ class SettingsController extends Controller {
 
         return $this->renderTemplate('convergine-socialbuddy/settings/_twitter', [
             'settings' => $settings,
-            'siteUrl' => $siteUrl
+            'siteUrl' => $siteUrl,
+            'csrfToken' => Craft::$app->getRequest()->getCsrfToken()
         ]);
     }
 
@@ -148,9 +279,11 @@ class SettingsController extends Controller {
         $platform = SocialBuddyPlugin::getInstance()->platform;
         $license = $platform->getLicense();
         $settings->license = $license;
+        $siteUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
 
         return $this->renderTemplate('convergine-socialbuddy/settings/_telegram', [
             'settings' => $settings,
+            'siteUrl' => $siteUrl
         ]);
     }
 

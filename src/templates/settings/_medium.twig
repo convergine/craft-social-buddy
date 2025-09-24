@@ -23,17 +23,128 @@
 
         {% else %}
 
+        {% set mediumService = craft.socialbuddy.medium ?? null %}
+        {% set isConnected = mediumService ? mediumService.isConnected() : false %}
+        {% set connectionStatus = mediumService and isConnected ? mediumService.connectionStatus : {} %}
+
+        <p>
+            To connect your Medium account, get an integration token from <a href="https://medium.com/me/settings/security" target="_blank">Medium Security Settings</a>.
+        </p>
 
         {{ forms.autosuggestField({
-            label: 'Integration token'|t('convergine-socialbuddy'),
+            label: 'Medium Integration Token'|t('convergine-socialbuddy'),
             name: 'mediumIntegrationToken',
             value: settings.mediumIntegrationToken,
-            instructions: 'You can find it on https://medium.com/me/settings/security under Integration tokens section'|t('convergine-socialbuddy'),
+            instructions: 'Enter your Medium integration token here. You can find it in your Medium Settings > Security > Integration tokens'|t('convergine-socialbuddy'),
             suggestEnvVars: true,
         }) }}
 
+        {% if not mediumService %}
+            <div class="error" style="padding: 15px; background: #ffe6e6; border: 1px solid #ff6b6b; border-radius: 4px; color: #c62828;">
+                <strong>Error:</strong> Medium service is not available. Please check your plugin configuration.
+            </div>
+        {% elseif isConnected %}
+            <div style="display: flex; align-items: center; margin-top: 10px;">
+                <span>Connected to Medium</span>
+                {% if connectionStatus.username is defined %}
+                    <span style="font-weight: bold; margin-left: 10px; vertical-align: middle;">{{ connectionStatus.username }}</span>
+                {% endif %}
+                <button type="button" class="btn secondary" style="margin-left: 10px;" onclick="disconnectMedium(event)">Disconnect</button>
+            </div>
+        {% elseif settings.mediumIntegrationToken %}
+            {% set isValidConnection = mediumService ? mediumService.validateConnection() : false %}
+            {% if isValidConnection %}
+                <div style="padding: 10px; background: #e8f5e8; border: 1px solid #4caf50; border-radius: 4px; margin-top: 10px; color: #2e7d32;">
+                    <strong>✓ Token validated</strong> - Ready to publish to Medium
+                </div>
+            {% else %}
+                <button type="button" class="btn primary connect-btn" style="margin-top: 10px;" onclick="testMediumConnection()">
+                    <span id="medium-connect-loader" style="display:none; margin-left: 5px;">Testing...</span>
+                    Test Connection
+                </button>
+            {% endif %}
         {% endif %}
 
+        {% endif %}
 
     {% endnamespace %}
+
+    <script>
+    function testMediumConnection() {
+        var button = document.querySelector('.connect-btn');
+        var loader = document.getElementById('medium-connect-loader');
+        var tokenField = document.querySelector('input[name="settings[mediumIntegrationToken]"]');
+        
+        if (!tokenField || !tokenField.value.trim()) {
+            Craft.cp.displayError('Please enter a Medium integration token first.');
+            return;
+        }
+
+        button.disabled = true;
+        if (loader) loader.style.display = 'inline';
+
+        // Test the token by making a connection request
+        fetch('{{ actionUrl("convergine-socialbuddy/medium/connect") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': '{{ craft.app.request.csrfToken }}'
+            },
+            body: 'accessToken=' + encodeURIComponent(tokenField.value)
+        })
+        .then(response => {
+            // Check if the response redirects (success) or stays on page
+            if (response.redirected || response.url.includes('settings')) {
+                Craft.cp.displayNotice('Medium connected successfully!');
+                window.location.reload();
+            } else {
+                return response.text().then(text => {
+                    // Try to extract error message from response
+                    Craft.cp.displayError('Failed to connect to Medium. Please check your token.');
+                });
+            }
+        })
+        .catch(error => {
+            Craft.cp.displayError('Connection test failed. Please check your token.');
+            console.error('Medium connection error:', error);
+        })
+        .finally(() => {
+            button.disabled = false;
+            if (loader) loader.style.display = 'none';
+        });
+    }
+
+    function disconnectMedium(event) {
+        if (!confirm('Are you sure you want to disconnect Medium?')) {
+            return;
+        }
+
+        var button = event.target;
+        button.disabled = true;
+        button.textContent = 'Disconnecting...';
+
+        fetch('{{ actionUrl("convergine-socialbuddy/medium/disconnect") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': '{{ craft.app.request.csrfToken }}'
+            }
+        })
+        .then(response => {
+            if (response.redirected || response.ok) {
+                Craft.cp.displayNotice('Medium disconnected successfully');
+                window.location.reload();
+            } else {
+                Craft.cp.displayError('Failed to disconnect Medium');
+                button.disabled = false;
+                button.textContent = 'Disconnect';
+            }
+        })
+        .catch(error => {
+            console.error('Error disconnecting Medium:', error);
+            Craft.cp.displayError('An error occurred. Please try again.');
+            button.disabled = false;
+            button.textContent = 'Disconnect';
+        });
+    }
+    </script>
 {% endblock %}

@@ -1,0 +1,11 @@
+{% extends '_layouts/cp' %}
+
+{% set title = 'Authorization Error' %}
+
+{% block content %}
+    <div class="error">
+        <h1>{{ 'Authorization Error'|t('convergine-socialbuddy') }}</h1>
+        <p>{{ error }}</p>
+        <p><a href="{{ cpUrl('convergine-socialbuddy/settings/general') }}">{{ 'Back to Settings'|t('convergine-socialbuddy') }}</a></p>
+    </div>
+{% endblock %}

@@ -23,7 +23,13 @@
             ],
         }) }}
 
-        <div class='buddy-alert success' style='display:block; margin-top: 16px;'><span>The cron job has been successfully configured. The plugin is now ready for automatic publishing.</span></div>
+        {% if settings.mode == 'automatic' %}
+            {% if cronConfigured %}
+                <div class='buddy-alert success' style='display:block; margin-top: 16px;'><span>The cron job has been successfully configured. The plugin is now ready for automatic publishing.</span></div>
+            {% else %}
+                <div class='buddy-alert error' style='display:block; margin-top: 16px;'><span>The cron job is not properly configured. Please set up the following cron job to run every hour: <code>php craft social-buddy/scheduled</code></span></div>
+            {% endif %}
+        {% endif %}
 
     {% endnamespace %}
 

@@ -6,9 +6,9 @@ Social Buddy is a CraftCMS plugin designed to streamline your social media publi
 
 The plugin has three licensing levels depending on social media platforms supported:
 
-- **FREE**: Facebook 
-- **LITE**: FREE + Instagram, X(Twitter) 
-- **PRO**: LITE + Pinterest, LinkedIn, Medium, Telegram
+- **LITE**: Facebook 
+- **STANDARD**: LITE + Instagram, X(Twitter) 
+- **PRO**: STANDARD + Pinterest, LinkedIn, Medium, Telegram
 
 The plugin offers flexibility with two operating modes:
 
@@ -20,7 +20,7 @@ Before publishing, administrators need to connect the plugin to their social med
 To enable automatic publishing, set up a cron job using the following command:
 
 ```bash
-php craft element-status-events/scheduled
+php craft social-buddy/scheduled
 ```
 
 This ensures that your content is shared promptly and efficiently without manual intervention.
@@ -85,7 +85,12 @@ After installation, configure the plugin by following these steps:
 
 2. **Set Publishing Preferences**: Choose between automatic and manual publishing modes, and configure content templates for each platform if desired.
 
-3. **Set Up Cron Job (For Automatic Mode)**: Schedule the following command to run at your preferred intervals:
+3. **Configure Entries/Default Fields**: Go to Social Buddy → Settings → Entries/Default Fields, enable the sections and entry types for which you need social media publishing. Select the entry attribute for the post body and the attribute for the image.
+
+4. **Add socialBuddy custom field to the Field Layout**: Go to Settings → Content → Sections.
+Choose Section and entry type. Add sociaulBuddy custom field somwhere in the Field Layout tabs.
+
+5. **Set Up Cron Job (For Automatic Mode)**: Schedule the following command to run at your preferred intervals:
 
     ```bash
     php craft element-status-events/scheduled
