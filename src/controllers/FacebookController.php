@@ -55,8 +55,8 @@ class FacebookController extends Controller
             $siteUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
             $redirectUri = $siteUrl . 'admin/convergine-socialbuddy/fb_auth';
 
-            $tokenEndpoint = 'https://graph.facebook.com/v17.0/oauth/access_token';
-            $graphApiUrl = 'https://graph.facebook.com/v17.0/';
+            $tokenEndpoint = 'https://graph.facebook.com/v23.0/oauth/access_token';
+            $graphApiUrl = 'https://graph.facebook.com/v23.0/';
 
             try {
                 // Create a Guzzle client

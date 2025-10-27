@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.1 - 2025-10-27
+
+### Changed
+- Migrated to v23 Facebook Graph API
 
 ## 1.1.0 - 2025-09-24
 

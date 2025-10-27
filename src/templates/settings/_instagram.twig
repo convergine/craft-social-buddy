@@ -115,7 +115,7 @@
             var apiKey = "{{settings.apiKey}}";
             
             // Open the Instagram Auth URL in a new tab (using Facebook OAuth with state=I)
-            var connectUrl = "https://www.facebook.com/v17.0/dialog/oauth?client_id={{settings.instagramClientId}}&redirect_uri={{siteUrl}}admin/convergine-socialbuddy/fb_auth&state=I&scope=business_management,pages_manage_posts,pages_show_list,instagram_basic,pages_read_engagement";
+            var connectUrl = "https://www.facebook.com/v23.0/dialog/oauth?client_id={{settings.instagramClientId}}&redirect_uri={{siteUrl}}admin/convergine-socialbuddy/fb_auth&state=I&scope=business_management,pages_manage_posts,pages_show_list,instagram_basic,pages_read_engagement";
             window.open(connectUrl, '_blank');            
             
             // Show loader

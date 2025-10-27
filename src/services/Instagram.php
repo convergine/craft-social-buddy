@@ -105,7 +105,7 @@ class Instagram extends Platform {
 
         $longLivedUserToken = $settings->instagramAccessToken; // Long-lived user access token
         $pageId = $settings->instagramPageId; // Facebook Page ID
-        $graphApiUrl = 'https://graph.facebook.com/v17.0/';
+        $graphApiUrl = 'https://graph.facebook.com/v23.0/';
 
         $client = new Client();
 

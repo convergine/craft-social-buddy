@@ -100,7 +100,7 @@
             var apiKey = "{{settings.apiKey}}";
             
             // Open the Facebook Auth URL in a new tab
-            var connectUrl = "https://www.facebook.com/v17.0/dialog/oauth?client_id={{settings.facebookClientId}}&redirect_uri={{siteUrl}}/admin/convergine-socialbuddy/fb_auth&state=F&scope=business_management,pages_manage_posts,pages_show_list,instagram_basic,pages_read_engagement";
+            var connectUrl = "https://www.facebook.com/v23.0/dialog/oauth?client_id={{settings.facebookClientId}}&redirect_uri={{siteUrl}}/admin/convergine-socialbuddy/fb_auth&state=F&scope=business_management,pages_manage_posts,pages_show_list,instagram_basic,pages_read_engagement";
             window.open(connectUrl, '_blank');            
             
             // Show loader

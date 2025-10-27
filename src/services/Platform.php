@@ -157,7 +157,7 @@ class Platform {
         $accessToken = $pageAccessToken;
         $pageId = $settings->facebookPageId;
     
-        $baseUrl = "https://graph.facebook.com/v21.0";
+        $baseUrl = "https://graph.facebook.com/v23.0";
         $metrics = "page_fan_adds,page_fan_removes,page_impressions,page_engaged_users";
     
         // Create the URL for the insights request

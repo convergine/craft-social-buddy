@@ -44,7 +44,7 @@ class Facebook extends Platform {
 
         $pageAccessToken = $settings->facebookAccessToken; // The page access token
         $pageId = $settings->facebookPageId;               // The page ID
-        $graphApiUrl = 'https://graph.facebook.com/v17.0/';
+        $graphApiUrl = 'https://graph.facebook.com/v23.0/';
 
         $client = new Client();
 
